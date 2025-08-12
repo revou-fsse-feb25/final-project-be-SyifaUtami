@@ -1,0 +1,173 @@
+// This is your Prisma schema file with CASCADE DELETION enabled
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  COORDINATOR
+}
+
+enum AssignmentStatus {
+  OPEN
+  CLOSED
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+}
+
+enum MaterialStatus {
+  DONE
+  NOT_DONE
+}
+
+// ACTUAL USERS (Only students and coordinators can login)
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  password  String?
+  firstName String
+  lastName  String?
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Student specific fields
+  courseCode String? // "BM" or "BA"
+  year       Int?
+
+  // Coordinator specific fields  
+  title         String?
+  accessLevel   String?
+  courseManaged String[] // Array of course codes they manage
+
+  // Relations - as student (WITH CASCADE DELETION)
+  studentSubmissions AssignmentSubmission[] @relation("StudentSubmissions")
+  studentProgress    StudentProgress[]
+  
+  @@map("users")
+}
+
+// TEACHERS (Data only - they don't login)
+model Teacher {
+  id           String   @id // "t001", "t002", etc.
+  firstName    String
+  lastName     String
+  email        String   @unique
+  unitsTeached String[] // Array of unit codes they teach
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("teachers")
+}
+
+// COURSES
+model Course {
+  id   String @id @default(cuid())
+  code String @unique // "BM", "BA"
+  name String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (WITH CASCADE DELETION)
+  units Unit[]
+
+  @@map("courses")
+}
+
+// UNITS (subjects within courses)
+model Unit {
+  id          String @id @default(cuid())
+  code        String @unique // "BM001", "BM002", "BA001", "BA002"
+  name        String
+  description String?
+  courseCode  String
+  currentWeek Int    @default(1)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (WITH CASCADE DELETION)
+  course          Course            @relation(fields: [courseCode], references: [code], onDelete: Cascade)
+  assignments     Assignment[]
+  studentProgress StudentProgress[]
+
+  @@map("units")
+}
+
+// ASSIGNMENTS
+model Assignment {
+  id          String           @id // "BM0011", "BM0012", etc.
+  name        String
+  unitCode    String
+  deadline    DateTime
+  publishedAt DateTime
+  status      AssignmentStatus
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (WITH CASCADE DELETION)
+  unit        Unit                   @relation(fields: [unitCode], references: [code], onDelete: Cascade)
+  submissions AssignmentSubmission[]
+
+  @@map("assignments")
+}
+
+// STUDENT SUBMISSIONS
+model AssignmentSubmission {
+  id               String           @id @default(cuid())
+  submissionId     String           @unique // "SUB_s001_BM0011_1"
+  studentId        String
+  assignmentId     String
+  submissionStatus SubmissionStatus @default(DRAFT)
+  submissionName   String?
+  submittedAt      DateTime?
+  grade            Float?
+  comment          String?
+  gradedBy         String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (WITH CASCADE DELETION)
+  student    User       @relation("StudentSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, assignmentId])
+  @@map("assignment_submissions")
+}
+
+// STUDENT PROGRESS (weekly materials)
+model StudentProgress {
+  id              String         @id @default(cuid())
+  studentId       String
+  unitCode        String
+  week1Material   MaterialStatus @default(NOT_DONE)
+  week2Material   MaterialStatus @default(NOT_DONE)
+  week3Material   MaterialStatus @default(NOT_DONE)
+  week4Material   MaterialStatus @default(NOT_DONE)
+  updatedBy       String?        // "coordinator"
+  lastUpdated     DateTime       @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (WITH CASCADE DELETION)
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  unit    Unit @relation(fields: [unitCode], references: [code], onDelete: Cascade)
+
+  @@unique([studentId, unitCode])
+  @@map("student_progress")
+}
