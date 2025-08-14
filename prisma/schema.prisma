@@ -1,5 +1,3 @@
-// This is your Prisma schema file with CASCADE DELETION enabled
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -21,8 +19,10 @@ enum AssignmentStatus {
 }
 
 enum SubmissionStatus {
-  DRAFT
-  SUBMITTED
+  EMPTY        // No submission yet
+  DRAFT        // Saved but not submitted
+  SUBMITTED    // Submitted for grading
+  UNSUBMITTED  // Deadline passed without submission
 }
 
 enum MaterialStatus {
@@ -51,24 +51,10 @@ model User {
   courseManaged String[] // Array of course codes they manage
 
   // Relations - as student (WITH CASCADE DELETION)
-  studentSubmissions AssignmentSubmission[] @relation("StudentSubmissions")
+  studentAssignments StudentAssignment[] @relation("StudentSubmissions")
   studentProgress    StudentProgress[]
   
   @@map("users")
-}
-
-// TEACHERS (Data only - they don't login)
-model Teacher {
-  id           String   @id // "t001", "t002", etc.
-  firstName    String
-  lastName     String
-  email        String   @unique
-  unitsTeached String[] // Array of unit codes they teach
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("teachers")
 }
 
 // COURSES
@@ -119,24 +105,26 @@ model Assignment {
   updatedAt DateTime @updatedAt
 
   // Relations (WITH CASCADE DELETION)
-  unit        Unit                   @relation(fields: [unitCode], references: [code], onDelete: Cascade)
-  submissions AssignmentSubmission[]
+  unit                Unit                @relation(fields: [unitCode], references: [code], onDelete: Cascade)
+  studentAssignments  StudentAssignment[]
 
   @@map("assignments")
 }
 
-// STUDENT SUBMISSIONS
-model AssignmentSubmission {
+// STUDENT ASSIGNMENTS
+model StudentAssignment {
   id               String           @id @default(cuid())
   submissionId     String           @unique // "SUB_s001_BM0011_1"
   studentId        String
   assignmentId     String
-  submissionStatus SubmissionStatus @default(DRAFT)
+  status           AssignmentStatus? // "open" or "closed" (assignment status) - optional
+  submissionStatus SubmissionStatus @default(EMPTY)
   submissionName   String?
   submittedAt      DateTime?
   grade            Float?
   comment          String?
   gradedBy         String?
+  gradedAt         DateTime?        // Added this field from your data
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -146,7 +134,7 @@ model AssignmentSubmission {
   assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, assignmentId])
-  @@map("assignment_submissions")
+  @@map("student_assignments")
 }
 
 // STUDENT PROGRESS (weekly materials)
