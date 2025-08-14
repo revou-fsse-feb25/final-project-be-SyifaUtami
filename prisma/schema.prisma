@@ -1,3 +1,5 @@
+// This is your updated Prisma schema file (Teacher model removed)
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -54,7 +56,35 @@ model User {
   studentAssignments StudentAssignment[] @relation("StudentSubmissions")
   studentProgress    StudentProgress[]
   
+  // Relation to Student model (one-to-one for students only)
+  student Student?
+  
   @@map("users")
+}
+
+// STUDENTS (Extended student-specific data)
+model Student {
+  id         String   @id // Same as User.id
+  userId     String   @unique // Foreign key to User
+  courseCode String   // "BM" or "BA"
+  year       Int
+  
+  // Student-specific fields
+  enrollmentDate DateTime @default(now())
+  studentNumber  String?  @unique // e.g., "2024001"
+  status         String   @default("ACTIVE") // ACTIVE, INACTIVE, GRADUATED
+  gpa           Float?   // Calculated GPA
+  totalCredits  Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentProgress StudentProgress[]   @relation("StudentProgressToStudent")
+  submissions     StudentAssignment[] @relation("StudentSubmissionsToStudent")
+  
+  @@map("students")
 }
 
 // COURSES
@@ -130,7 +160,8 @@ model StudentAssignment {
   updatedAt DateTime @updatedAt
 
   // Relations (WITH CASCADE DELETION)
-  student    User       @relation("StudentSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
+  user       User       @relation("StudentSubmissions", fields: [studentId], references: [id], onDelete: Cascade, map: "student_assignments_user_fkey")
+  student    Student    @relation("StudentSubmissionsToStudent", fields: [studentId], references: [id], onDelete: Cascade, map: "student_assignments_student_fkey")
   assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, assignmentId])
@@ -153,8 +184,9 @@ model StudentProgress {
   updatedAt DateTime @updatedAt
 
   // Relations (WITH CASCADE DELETION)
-  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  unit    Unit @relation(fields: [unitCode], references: [code], onDelete: Cascade)
+  user    User    @relation(fields: [studentId], references: [id], onDelete: Cascade, map: "student_progress_user_fkey")
+  student Student @relation("StudentProgressToStudent", fields: [studentId], references: [id], onDelete: Cascade, map: "student_progress_student_fkey")
+  unit    Unit    @relation(fields: [unitCode], references: [code], onDelete: Cascade)
 
   @@unique([studentId, unitCode])
   @@map("student_progress")

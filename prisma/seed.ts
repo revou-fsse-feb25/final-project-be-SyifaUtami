@@ -43,6 +43,11 @@ async function seed() {
     const progressData = JSON.parse(fs.readFileSync(path.join(dataPath, 'studentProgress.json'), 'utf8'));
     console.log(`📈 Found ${progressData.length} progress records`);
 
+    // Read faculty data (for coordinators)
+    const facultyData = JSON.parse(fs.readFileSync(path.join(dataPath, 'faculty.json'), 'utf8'));
+    const coordinatorsData = facultyData.faculty || facultyData; // Handle both nested and flat structure
+    console.log(`👨‍💼 Found ${coordinatorsData.length} coordinators`);
+
     // Hash passwords securely with individual passwords
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '12');
     
@@ -109,7 +114,63 @@ async function seed() {
       data: studentRecords,
       skipDuplicates: true
     });
-    console.log(`✅ Created ${studentRecords.length} students`);
+    console.log(`✅ Created ${studentRecords.length} student users`);
+
+    // Create Student records (extended student data)
+    console.log('👥 Creating student records...');
+    const studentExtendedRecords = studentsData.map((student, index) => ({
+      id: student.id, // Same as User.id
+      userId: student.id, // Foreign key to User
+      courseCode: student.courseCode,
+      year: student.year,
+      studentNumber: `2024${String(index + 1).padStart(3, '0')}`, // e.g., "2024001"
+      status: 'ACTIVE',
+      enrollmentDate: new Date()
+    }));
+
+    await prisma.student.createMany({
+      data: studentExtendedRecords,
+      skipDuplicates: true
+    });
+    console.log(`✅ Created ${studentExtendedRecords.length} student records`);
+
+    // Create coordinators from faculty data
+    console.log('👨‍💼 Creating coordinator records...');
+    const coordinatorRecords = await Promise.all(
+      coordinatorsData.map(async (coordinator) => {
+        let password: string;
+        
+        if (coordinator.password) {
+          password = coordinator.password;
+        } else {
+          // Generate unique password for each coordinator
+          password = `${coordinator.id}_Coord2024!`;
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        
+        // Log the password for initial setup
+        console.log(`   📝 ${coordinator.id}: ${password}`);
+        
+        return {
+          id: coordinator.id,
+          firstName: coordinator.firstName,
+          lastName: coordinator.lastName || '',
+          email: coordinator.email,
+          password: hashedPassword,
+          role: 'COORDINATOR',
+          title: coordinator.title || null,
+          accessLevel: coordinator.accessLevel || null,
+          courseManaged: coordinator.courseManaged || []
+        };
+      })
+    );
+
+    await prisma.user.createMany({
+      data: coordinatorRecords,
+      skipDuplicates: true
+    });
+    console.log(`✅ Created ${coordinatorRecords.length} coordinators`);
 
     // Create assignments
     console.log('📝 Creating assignments...');
@@ -194,7 +255,9 @@ async function seed() {
 
     // Verify seeded data
     console.log('\n🔍 Verifying seeded data...');
-    const finalStudentCount = await prisma.user.count({ where: { role: 'STUDENT' } });
+    const finalStudentUserCount = await prisma.user.count({ where: { role: 'STUDENT' } });
+    const finalStudentCount = await prisma.student.count();
+    const finalCoordinatorCount = await prisma.user.count({ where: { role: 'COORDINATOR' } });
     const finalCourseCount = await prisma.course.count();
     const finalUnitCount = await prisma.unit.count();
     const finalAssignmentCount = await prisma.assignment.count();
@@ -202,7 +265,9 @@ async function seed() {
     const finalProgressCount = await prisma.studentProgress.count();
 
     console.log('\n📊 SEEDING SUMMARY:');
-    console.log(`   👥 Students: ${finalStudentCount}`);
+    console.log(`   👥 Student Users: ${finalStudentUserCount}`);
+    console.log(`   📚 Student Records: ${finalStudentCount}`);
+    console.log(`   👨‍💼 Coordinators: ${finalCoordinatorCount}`);
     console.log(`   📚 Courses: ${finalCourseCount}`);
     console.log(`   📖 Units: ${finalUnitCount}`);
     console.log(`   📝 Assignments: ${finalAssignmentCount}`);
@@ -211,9 +276,9 @@ async function seed() {
 
     console.log('\n🎉 Dynamic seeding completed successfully!');
     
-    console.log('\n🔑 Student Login Credentials:');
-    console.log('   All students use pattern: {studentId}_Student2024!');
-    console.log('   Example: s001_Student2024!, s002_Student2024!, etc.');
+    console.log('\n🔑 Login Credentials:');
+    console.log('   👥 Students: {studentId}_Student2024! (e.g., s001_Student2024!)');
+    console.log('   👨‍💼 Coordinators: {coordinatorId}_Coord2024! (e.g., f001_Coord2024!)');
 
   } catch (error) {
     console.error('❌ Seeding failed:', error);
