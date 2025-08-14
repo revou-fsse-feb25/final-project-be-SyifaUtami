@@ -11,48 +11,50 @@
     "studentId": "s001",
     "unitCode": "BM002",
     "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
+    "week2Material": "done",
+    "week3Material": "not done",
+    "week4Material": "not done",
+    "updatedBy": "coordinator",
+    "lastUpdated": "2025-07-29T11:56:52.503Z"
   },
   {
     "studentId": "s002",
     "unitCode": "BA001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
+    "week1Material": "done",
+    "week2Material": "done",
+    "week3Material": "done",
     "week4Material": "not done"
   },
   {
     "studentId": "s002",
     "unitCode": "BA002",
     "week1Material": "done",
-    "week2Material": "not done",
+    "week2Material": "done",
     "week3Material": "done",
-    "week4Material": "done"
+    "week4Material": "not done"
   },
   {
     "studentId": "s003",
     "unitCode": "BM001",
     "week1Material": "done",
-    "week2Material": "done",
+    "week2Material": "not done",
     "week3Material": "not done",
-    "week4Material": "done"
+    "week4Material": "not done"
   },
   {
     "studentId": "s003",
     "unitCode": "BM002",
-    "week1Material": "not done",
+    "week1Material": "done",
     "week2Material": "not done",
     "week3Material": "not done",
-    "week4Material": "done"
+    "week4Material": "not done"
   },
   {
     "studentId": "s004",
     "unitCode": "BA001",
-    "week1Material": "not done",
+    "week1Material": "done",
     "week2Material": "done",
-    "week3Material": "not done",
+    "week3Material": "done",
     "week4Material": "not done"
   },
   {
@@ -67,80 +69,80 @@
     "studentId": "s005",
     "unitCode": "BM001",
     "week1Material": "done",
-    "week2Material": "not done",
+    "week2Material": "done",
     "week3Material": "done",
-    "week4Material": "done"
+    "week4Material": "not done"
   },
   {
     "studentId": "s005",
     "unitCode": "BM002",
-    "week1Material": "not done",
-    "week2Material": "not done",
+    "week1Material": "done",
+    "week2Material": "done",
     "week3Material": "done",
-    "week4Material": "done"
+    "week4Material": "not done"
   },
   {
     "studentId": "s006",
     "unitCode": "BA001",
-    "week1Material": "not done",
+    "week1Material": "done",
     "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
+    "week3Material": "done",
+    "week4Material": "not done"
   },
   {
     "studentId": "s006",
     "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
+    "week1Material": "done",
+    "week2Material": "done",
     "week3Material": "done",
     "week4Material": "not done"
   },
   {
     "studentId": "s007",
     "unitCode": "BM001",
-    "week1Material": "not done",
+    "week1Material": "done",
     "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
+    "week3Material": "done",
+    "week4Material": "not done"
   },
   {
     "studentId": "s007",
     "unitCode": "BM002",
-    "week1Material": "not done",
+    "week1Material": "done",
     "week2Material": "done",
     "week3Material": "done",
-    "week4Material": "done"
+    "week4Material": "not done"
   },
   {
     "studentId": "s008",
     "unitCode": "BA001",
-    "week1Material": "not done",
+    "week1Material": "done",
     "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "done"
+    "week3Material": "not done",
+    "week4Material": "not done"
   },
   {
     "studentId": "s008",
     "unitCode": "BA002",
     "week1Material": "done",
-    "week2Material": "done",
+    "week2Material": "not done",
     "week3Material": "not done",
     "week4Material": "not done"
   },
   {
     "studentId": "s009",
     "unitCode": "BM001",
-    "week1Material": "not done",
+    "week1Material": "done",
     "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
+    "week3Material": "done",
+    "week4Material": "not done"
   },
   {
     "studentId": "s009",
     "unitCode": "BM002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
+    "week1Material": "done",
+    "week2Material": "done",
+    "week3Material": "done",
     "week4Material": "not done"
   },
   {
@@ -148,655 +150,15 @@
     "unitCode": "BA001",
     "week1Material": "done",
     "week2Material": "done",
-    "week3Material": "not done",
+    "week3Material": "done",
     "week4Material": "not done"
   },
   {
     "studentId": "s010",
     "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s011",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s011",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s012",
-    "unitCode": "BA001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s012",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s013",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s013",
-    "unitCode": "BM002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s014",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s014",
-    "unitCode": "BA002",
     "week1Material": "done",
     "week2Material": "done",
     "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s015",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s015",
-    "unitCode": "BM002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s016",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s016",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s017",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s017",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s018",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s018",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s019",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s019",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s020",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s020",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s021",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s021",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s022",
-    "unitCode": "BA001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s022",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s023",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s023",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s024",
-    "unitCode": "BA001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s024",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s025",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s025",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s026",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s026",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s027",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s027",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s028",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s028",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s029",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s029",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s030",
-    "unitCode": "BA001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s030",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s031",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s031",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s032",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s032",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s033",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s033",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s034",
-    "unitCode": "BA001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s034",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s035",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s035",
-    "unitCode": "BM002",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s036",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s036",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s037",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s037",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s038",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s038",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s039",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s039",
-    "unitCode": "BM002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s040",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s040",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s041",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s041",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s042",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s042",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s043",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s043",
-    "unitCode": "BM002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s044",
-    "unitCode": "BA001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s044",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s045",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s045",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s046",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s046",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s047",
-    "unitCode": "BM001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s047",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s048",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s048",
-    "unitCode": "BA002",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s049",
-    "unitCode": "BM001",
-    "week1Material": "not done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s049",
-    "unitCode": "BM002",
-    "week1Material": "done",
-    "week2Material": "not done",
-    "week3Material": "not done",
-    "week4Material": "done"
-  },
-  {
-    "studentId": "s050",
-    "unitCode": "BA001",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "done",
-    "week4Material": "not done"
-  },
-  {
-    "studentId": "s050",
-    "unitCode": "BA002",
-    "week1Material": "done",
-    "week2Material": "done",
-    "week3Material": "not done",
     "week4Material": "not done"
   }
 ]

@@ -1,52 +1,76 @@
 [
-  { "id": "s001", "firstName": "Tom", "lastName": "Holland", "email": "TomHolland@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s002", "firstName": "Florence", "lastName": "Pugh", "email": "FlorencePugh@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s003", "firstName": "Zendaya", "lastName": "Coleman", "email": "ZendayaColeman@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s004", "firstName": "Timothée", "lastName": "Chalamet", "email": "TimotheeChalamet@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s005", "firstName": "Anya", "lastName": "Taylor-Joy", "email": "AnyaTaylorJoy@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s006", "firstName": "Emma", "lastName": "Stone", "email": "EmmaStone@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s007", "firstName": "Jacob", "lastName": "Elordi", "email": "JacobElordi@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s008", "firstName": "Sydney", "lastName": "Sweeney", "email": "SydneySweeney@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s009", "firstName": "Noah", "lastName": "Centineo", "email": "NoahCentineo@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s010", "firstName": "Lana", "lastName": "Condor", "email": "LanaCondor@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s011", "firstName": "Harry", "lastName": "Styles", "email": "HarryStyles@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s012", "firstName": "Selena", "lastName": "Gomez", "email": "SelenaGomez@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s013", "firstName": "Dua", "lastName": "Lipa", "email": "DuaLipa@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s014", "firstName": "Shawn", "lastName": "Mendes", "email": "ShawnMendes@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s015", "firstName": "Billie", "lastName": "Eilish", "email": "BillieEilish@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s016", "firstName": "Ariana", "lastName": "Grande", "email": "ArianaGrande@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s017", "firstName": "Chris", "lastName": "Evans", "email": "ChrisEvans@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s018", "firstName": "Scarlett", "lastName": "Johansson", "email": "ScarlettJohansson@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s019", "firstName": "Robert", "lastName": "Downey", "email": "RobertDowney@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s020", "firstName": "Gal", "lastName": "Gadot", "email": "GalGadot@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s021", "firstName": "Chris", "lastName": "Hemsworth", "email": "ChrisHemsworth@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s022", "firstName": "Mark", "lastName": "Ruffalo", "email": "MarkRuffalo@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s023", "firstName": "Jeremy", "lastName": "Renner", "email": "JeremyRenner@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s024", "firstName": "Tom", "lastName": "Hiddleston", "email": "TomHiddleston@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s025", "firstName": "Elizabeth", "lastName": "Olsen", "email": "ElizabethOlsen@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s026", "firstName": "Paul", "lastName": "Rudd", "email": "PaulRudd@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s027", "firstName": "Brie", "lastName": "Larson", "email": "BrieLarson@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s028", "firstName": "Benedict", "lastName": "Cumberbatch", "email": "BenedictCumberbatch@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s029", "firstName": "Chris", "lastName": "Pratt", "email": "ChrisPratt@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s030", "firstName": "Zoe", "lastName": "Saldana", "email": "ZoeSaldana@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s031", "firstName": "Anthony", "lastName": "Mackie", "email": "AnthonyMackie@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s032", "firstName": "Sebastian", "lastName": "Stan", "email": "SebastianStan@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s033", "firstName": "Elizabeth", "lastName": "Banks", "email": "ElizabethBanks@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s034", "firstName": "Vin", "lastName": "Diesel", "email": "VinDiesel@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s035", "firstName": "Dwayne", "lastName": "Johnson", "email": "DwayneJohnson@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s036", "firstName": "Gal", "lastName": "Gadot", "email": "GalGadot2@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s037", "firstName": "Henry", "lastName": "Cavill", "email": "HenryCavill@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s038", "firstName": "Ben", "lastName": "Affleck", "email": "BenAffleck@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s039", "firstName": "Matt", "lastName": "Damon", "email": "MattDamon@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s040", "firstName": "Jeremy", "lastName": "Irons", "email": "JeremyIrons@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s041", "firstName": "Chris", "lastName": "Evans2", "email": "ChrisEvans2@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s042", "firstName": "Scarlett", "lastName": "Johansson2", "email": "ScarlettJohansson2@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s043", "firstName": "Robert", "lastName": "Downey2", "email": "RobertDowney2@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s044", "firstName": "Chris", "lastName": "Hemsworth2", "email": "ChrisHemsworth2@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s045", "firstName": "Mark", "lastName": "Ruffalo2", "email": "MarkRuffalo2@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s046", "firstName": "Jeremy", "lastName": "Renner2", "email": "JeremyRenner2@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s047", "firstName": "Tom", "lastName": "Hiddleston2", "email": "TomHiddleston2@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s048", "firstName": "Elizabeth", "lastName": "Olsen2", "email": "ElizabethOlsen2@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 },
-  { "id": "s049", "firstName": "Paul", "lastName": "Rudd2", "email": "PaulRudd2@imajine.ac.id", "password": "student123", "courseCode": "BM", "year": 1 },
-  { "id": "s050", "firstName": "Brie", "lastName": "Larson2", "email": "BrieLarson2@imajine.ac.id", "password": "student123", "courseCode": "BA", "year": 1 }
+  {
+    "id": "s001",
+    "firstName": "Tom",
+    "lastName": "Holland",
+    "email": "TomHolland@imajine.ac.id",
+    "password": "student123",
+    "courseCode": "BM",
+    "year": 1
+  },
+  {
+    "id": "s002",
+    "firstName": "Florence",
+    "lastName": "Pugh",
+    "email": "FlorencePugh@imajine.ac.id",
+    "password": "student123",
+    "courseCode": "BA",
+    "year": 1
+  },
+  {
+    "id": "s003",
+    "firstName": "Zendaya",
+    "lastName": "",
+    "courseCode": "BM",
+    "year": 1
+  },
+  {
+    "id": "s004",
+    "firstName": "Timothée",
+    "lastName": "Chalamet",
+    "courseCode": "BA",
+    "year": 1
+  },
+  {
+    "id": "s005",
+    "firstName": "Anya",
+    "lastName": "Taylor-Joy",
+    "courseCode": "BM",
+    "year": 1
+  },
+  {
+    "id": "s006",
+    "firstName": "Emma",
+    "lastName": "Stone",
+    "courseCode": "BA",
+    "year": 1
+  },
+  {
+    "id": "s007",
+    "firstName": "Jacob",
+    "lastName": "Elordi",
+    "courseCode": "BM",
+    "year": 1
+  },
+  {
+    "id": "s008",
+    "firstName": "Sydney",
+    "lastName": "Sweeney",
+    "courseCode": "BA",
+    "year": 1
+  },
+  {
+    "id": "s009",
+    "firstName": "Noah",
+    "lastName": "Centineo",
+    "courseCode": "BM",
+    "year": 1
+  },
+  {
+    "id": "s010",
+    "firstName": "Lana",
+    "lastName": "Condor",
+    "courseCode": "BA",
+    "year": 1
+  }
 ]
