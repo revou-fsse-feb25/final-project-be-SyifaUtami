@@ -1,4 +1,18 @@
-import { Controller } from '@nestjs/common';
-
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { CoursesService } from './courses.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.auth-guard';
 @Controller('courses')
-export class CoursesController {}
+@UseGuards(JwtAuthGuard)
+export class CoursesController {
+  constructor(private readonly coursesService: CoursesService) {}
+
+  @Get()
+  async findAll() {
+    return this.coursesService.findAll();
+  }
+
+  @Get(':code')
+  async findOne(@Param('code') code: string) {
+    return this.coursesService.findOne(code);
+  }
+}

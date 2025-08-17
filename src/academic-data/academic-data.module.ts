@@ -4,6 +4,7 @@ import { AcademicDataController } from './academic-data.controller';
 
 @Module({
   providers: [AcademicDataService],
-  controllers: [AcademicDataController]
+  controllers: [AcademicDataController],
+  exports: [AcademicDataService],
 })
 export class AcademicDataModule {}
