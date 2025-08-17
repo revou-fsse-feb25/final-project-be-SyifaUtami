@@ -12,7 +12,7 @@ export class SubmissionsService {
     const submission = await this.db.studentAssignment.findUnique({
       where: { submissionId },
       include: {
-        student: {
+        user: {
           select: { id: true, firstName: true, lastName: true, email: true },
         },
         assignment: {
@@ -30,7 +30,8 @@ export class SubmissionsService {
       assignment: submission.assignment,
     };
   }
-// PUT /submissions/:submissionId/grade - Update grades (coordinators)
+
+  // PUT /submissions/:submissionId/grade - Update grades (coordinators)
   async updateGrade(submissionId: string, updateGradeDto: UpdateGradeDto) {
     const { grade, comment, gradedBy } = updateGradeDto;
 
@@ -49,7 +50,7 @@ export class SubmissionsService {
         gradedAt: new Date(),
       },
       include: {
-        student: {
+        user: {
           select: { id: true, firstName: true, lastName: true, email: true },
         },
         assignment: true,
@@ -76,7 +77,7 @@ export class SubmissionsService {
       where: { submissionId },
       data: updateData,
       include: {
-        student: {
+        user: {
           select: { id: true, firstName: true, lastName: true, email: true },
         },
         assignment: true,
