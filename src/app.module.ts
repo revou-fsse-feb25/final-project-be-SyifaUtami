@@ -22,38 +22,3 @@ import { SubmissionsModule } from './submissions/submissions.module';
 import { UnitsModule } from './units/units.module';
 import { CoursesModule } from './courses/courses.module';
 import { AcademicDataModule } from './academic-data/academic-data.module';
-
-Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
-    PassportModule,
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      signOptions: { expiresIn: '24h' },
-    }),
-    PrismaModule,
-    AuthModule,
-    UsersModule,
-    StudentsModule,
-    AssignmentsModule,
-    SubmissionsModule,
-    UnitsModule,
-    CoursesModule,
-    AcademicDataModule,
-    // FacultyModule,    // Add these if you have them
-    // TeachersModule,   // Add these if you have them
-  ],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-  ],
-})
-export class AppModule {}
