@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../prisma/prisma.service';
 import { GetStudentsDto } from './dto/get-students.dto';
 import { PaginatedResult, StudentsWithDataResult } from '../common/interfaces/pagination.interface';
@@ -51,9 +51,8 @@ export class StudentsService {
     const totalPages = Math.ceil(total / limit);
 
     if (!includeData) {
-      // Return simple paginated result
       return {
-        data: students, // This is an array, so it matches PaginatedResult<T>
+        data: students,
         total,
         page,
         limit,
@@ -68,15 +67,21 @@ export class StudentsService {
       this.db.studentAssignment.findMany({
         where: { studentId: { in: studentIds } },
         include: {
-          assignment: true,
+          assignment: {
+            include: {
+              unit: true,
+            },
+          },
         },
       }),
       this.db.studentProgress.findMany({
         where: { studentId: { in: studentIds } },
+        include: {
+          unit: true,
+        },
       }),
     ]);
 
-    // Return the specialized interface for data with additional info
     return {
       students,
       assignments,
@@ -89,8 +94,8 @@ export class StudentsService {
   }
 
   async findOne(id: string) {
-    const student = await this.db.user.findFirst({
-      where: { id, role: 'STUDENT' },
+    const student = await this.db.user.findUnique({
+      where: { id },
       select: {
         id: true,
         firstName: true,
@@ -99,11 +104,12 @@ export class StudentsService {
         courseCode: true,
         year: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
 
     if (!student) {
-      throw new Error('Student not found');
+      throw new NotFoundException('Student not found');
     }
 
     // Get student's assignments and progress
@@ -113,18 +119,21 @@ export class StudentsService {
         include: {
           assignment: {
             include: {
-              unit: true,
+              unit: {
+                include: { course: true },
+              },
             },
           },
+        },
+        orderBy: {
+          assignment: { deadline: 'asc' },
         },
       }),
       this.db.studentProgress.findMany({
         where: { studentId: id },
         include: {
           unit: {
-            include: {
-              course: true,
-            },
+            include: { course: true },
           },
         },
       }),
@@ -137,66 +146,223 @@ export class StudentsService {
     };
   }
 
-  // Calculate student statistics for coordinator overview
   async getStudentStats(courseCode?: string) {
     const where: any = { role: 'STUDENT' };
     if (courseCode) {
       where.courseCode = courseCode;
     }
 
-    const totalStudents = await this.db.user.count({ where });
+    const [totalStudents, activeStudents] = await Promise.all([
+      this.db.user.count({ where }),
+      this.db.user.count({
+        where: {
+          ...where,
+          updatedAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Active in last 30 days
+          },
+        },
+      }),
+    ]);
 
-    // Calculate average progress across all units
-    const progressData = await this.db.studentProgress.findMany({
-      where: courseCode ? { 
-        student: { courseCode } 
-      } : {},
-      include: {
-        student: true,
+    // Get course distribution
+    const courseDistribution = await this.db.user.groupBy({
+      by: ['courseCode'],
+      where: { role: 'STUDENT' },
+      _count: {
+        courseCode: true,
       },
     });
 
-    // Calculate average submission rate
-    const submissionData = await this.db.studentAssignment.findMany({
-      where: courseCode ? {
-        student: { courseCode }
-      } : {},
-      include: {
-        student: true,
+    // Get year distribution
+    const yearDistribution = await this.db.user.groupBy({
+      by: ['year'],
+      where: { role: 'STUDENT' },
+      _count: {
+        year: true,
       },
     });
 
-    const totalSubmissions = submissionData.length;
-    const submittedCount = submissionData.filter(s => s.submissionStatus === 'SUBMITTED').length;
-    const avgSubmissionRate = totalSubmissions > 0 ? (submittedCount / totalSubmissions) * 100 : 0;
+    // Calculate average grades
+    const submissions = await this.db.studentAssignment.findMany({
+      where: {
+        grade: { not: null },
+        ...(courseCode && {
+          user: { courseCode },
+        }),
+      },
+      select: {
+        grade: true,
+        studentId: true,
+      },
+    });
 
-    // Calculate average grade
-    const gradedSubmissions = submissionData.filter(s => s.grade !== null);
-    const avgGrade = gradedSubmissions.length > 0 
-      ? gradedSubmissions.reduce((sum, s) => sum + (s.grade || 0), 0) / gradedSubmissions.length
+    const studentGrades = submissions.reduce((acc, sub) => {
+      if (!acc[sub.studentId]) {
+        acc[sub.studentId] = [];
+      }
+      acc[sub.studentId].push(sub.grade!);
+      return acc;
+    }, {} as Record<string, number[]>);
+
+    const averageGrades = Object.values(studentGrades).map(grades => 
+      grades.reduce((sum, grade) => sum + grade, 0) / grades.length
+    );
+
+    const overallAverageGrade = averageGrades.length > 0
+      ? Math.round(averageGrades.reduce((sum, avg) => sum + avg, 0) / averageGrades.length)
       : 0;
-
-    // Calculate average progress percentage
-    let avgProgress = 0;
-    if (progressData.length > 0) {
-      const progressPercentages = progressData.map(p => {
-        const completed = [
-          p.week1Material === 'DONE' ? 1 : 0,
-          p.week2Material === 'DONE' ? 1 : 0,
-          p.week3Material === 'DONE' ? 1 : 0,
-          p.week4Material === 'DONE' ? 1 : 0,
-        ].reduce((sum, val) => sum + val, 0);
-        return (completed / 4) * 100;
-      });
-      
-      avgProgress = progressPercentages.reduce((sum, p) => sum + p, 0) / progressPercentages.length;
-    }
 
     return {
       totalStudents,
-      avgProgress,
-      avgSubmissionRate,
-      avgGrade,
+      activeStudents,
+      inactiveStudents: totalStudents - activeStudents,
+      courseDistribution: courseDistribution.map(item => ({
+        courseCode: item.courseCode,
+        count: item._count.courseCode,
+      })),
+      yearDistribution: yearDistribution.map(item => ({
+        year: item.year,
+        count: item._count.year,
+      })),
+      overallAverageGrade,
+      studentsWithGrades: Object.keys(studentGrades).length,
     };
+  }
+
+  // Get students with their average grades for coordinator view
+  async getStudentsWithGrades(dto: GetStudentsDto) {
+    const { page = 1, limit = 20, courseCode, search } = dto;
+    const skip = (page - 1) * limit;
+
+    const where: any = { role: 'STUDENT' };
+    if (courseCode) where.courseCode = courseCode;
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [students, total] = await Promise.all([
+      this.db.user.findMany({
+        where,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          courseCode: true,
+          year: true,
+          createdAt: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { firstName: 'asc' },
+      }),
+      this.db.user.count({ where }),
+    ]);
+
+    // Get grades for these students
+    const studentIds = students.map(s => s.id);
+    const submissions = await this.db.studentAssignment.findMany({
+      where: {
+        studentId: { in: studentIds },
+        grade: { not: null },
+      },
+      select: {
+        studentId: true,
+        grade: true,
+        submissionStatus: true,
+      },
+    });
+
+    // Calculate metrics for each student
+    const studentsWithGrades = students.map(student => {
+      const studentSubmissions = submissions.filter(s => s.studentId === student.id);
+      const grades = studentSubmissions.filter(s => s.grade !== null).map(s => s.grade!);
+      const submittedCount = studentSubmissions.filter(s => s.submissionStatus === 'SUBMITTED').length;
+      
+      const averageGrade = grades.length > 0
+        ? Math.round(grades.reduce((sum, grade) => sum + grade, 0) / grades.length)
+        : 0;
+
+      return {
+        ...student,
+        averageGrade,
+        totalSubmissions: studentSubmissions.length,
+        submittedCount,
+        gradedCount: grades.length,
+      };
+    });
+
+    return {
+      data: studentsWithGrades,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  // Get student's enrolled units
+  async getStudentUnits(studentId: string) {
+    const student = await this.db.user.findUnique({
+      where: { id: studentId },
+      select: { courseCode: true },
+    });
+
+    if (!student?.courseCode) {
+      throw new NotFoundException('Student not found or not enrolled in a course');
+    }
+
+    // Get units for the student's course
+    const units = await this.db.unit.findMany({
+      where: { courseCode: student.courseCode },
+      include: {
+        course: true,
+        assignments: {
+          select: {
+            id: true,
+            name: true,
+            deadline: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { code: 'asc' },
+    });
+
+    // Get student's progress for these units
+    const progress = await this.db.studentProgress.findMany({
+      where: {
+        studentId,
+        unitCode: { in: units.map(u => u.code) },
+      },
+    });
+
+    // Combine units with progress
+    const unitsWithProgress = units.map(unit => {
+      const unitProgress = progress.find(p => p.unitCode === unit.code);
+      
+      let progressPercentage = 0;
+      if (unitProgress) {
+        const completed = [
+          unitProgress.week1Material === 'DONE' ? 1 : 0,
+          unitProgress.week2Material === 'DONE' ? 1 : 0,
+          unitProgress.week3Material === 'DONE' ? 1 : 0,
+          unitProgress.week4Material === 'DONE' ? 1 : 0,
+        ].reduce((sum, week) => sum + week, 0);
+        progressPercentage = Math.round((completed / 4) * 100);
+      }
+
+      return {
+        ...unit,
+        progressPercentage,
+        progress: unitProgress,
+      };
+    });
+
+    return unitsWithProgress;
   }
 }

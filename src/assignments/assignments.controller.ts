@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { AssignmentsService } from './assignments.service';
 import { GetAssignmentsDto } from './dto/get-assignments';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('assignments')
 @UseGuards(JwtAuthGuard)

@@ -2,7 +2,7 @@ import { Controller, Get, Param, Put, Body, UseGuards } from '@nestjs/common';
 import { SubmissionsService } from './submissions.service';
 import { UpdateGradeDto} from './dto/update-grade.dto';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
