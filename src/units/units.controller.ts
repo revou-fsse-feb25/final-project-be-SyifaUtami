@@ -13,7 +13,7 @@ import { UnitsService } from './units.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
 import { GetUnitsDto } from './dto/get-unit.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt.auth-guard';
+import { JwtAuthGuard } from '../auth/guards/jwt.auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
