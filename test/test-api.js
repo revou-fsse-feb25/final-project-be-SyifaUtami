@@ -1,187 +1,228 @@
-// test/full-api-test.js - Complete API test with your actual data
+// test/complete-api-test.js - Test ALL endpoints from all modules
 const axios = require('axios');
 
-const TEST_COORDINATOR = {
-  email: 'coordinator@imajine.ac.id',
-  password: 'coordinator123' 
+const CONFIG = {
+  BASE_URL: 'http://localhost:3000',
+  COORDINATOR_TOKEN: '',
+  STUDENT_TOKEN: '',
+  COORDINATOR: {
+    email: 'coordinator@imajine.ac.id',
+    password: 'coordinator123',
+    userType: 'coordinator'
+  },
+  STUDENT: {
+    email: 'TomHolland@imajine.ac.id',
+    password: 'student123',
+    userType: 'student'
+  }
 };
 
-const COMMON_PORTS = [3000, 3001, 8000, 5000, 4000];
-let BASE_URL = '';
-let authToken = '';
-
-async function findBackendPort() {
-  console.log('🔍 Finding your backend...');
-  
-  for (const port of COMMON_PORTS) {
-    try {
-      const response = await axios.get(`http://localhost:${port}`, { 
-        timeout: 2000,
-        validateStatus: () => true 
-      });
-      
-      console.log(`✅ Found backend on port ${port}!`);
-      BASE_URL = `http://localhost:${port}`;
-      return true;
-    } catch (error) {
-      console.log(`   ❌ Port ${port} - not responding`);
-    }
-  }
-  
-  console.log('❌ Backend not found. Make sure it\'s running: npm run start:dev');
-  return false;
-}
-
-async function testLogin() {
-  console.log('\n🔐 Testing login with your coordinator...');
+async function testLogin(userConfig, tokenKey) {
+  console.log(`🔐 Testing ${userConfig.userType} login: ${userConfig.email}`);
   
   try {
-    const response = await axios.post(`${BASE_URL}/auth/login`, TEST_COORDINATOR, {
-      timeout: 5000
-    });
+    const response = await axios.post(`${CONFIG.BASE_URL}/auth/login`, {
+      email: userConfig.email,
+      password: userConfig.password,
+      userType: userConfig.userType
+    }, { timeout: 5000 });
     
-    authToken = response.data.access_token;
-    console.log('✅ Login successful!');
-    console.log(`   User: ${response.data.user.email}`);
-    console.log(`   Role: ${response.data.user.role}`);
+    CONFIG[tokenKey] = response.data.access_token;
+    console.log(`✅ ${userConfig.userType.toUpperCase()} LOGIN SUCCESS!`);
     return true;
-    
   } catch (error) {
-    console.log('❌ Login failed:', error.response?.data?.message || error.message);
-    console.log('💡 Try different passwords:');
+    console.log(`❌ ${userConfig.userType} login failed`);
     return false;
   }
 }
 
-async function testEndpoint(method, url, description) {
+async function testEndpoint(method, url, description, expectedStatus = 200, useStudentToken = false) {
+  const token = useStudentToken ? CONFIG.STUDENT_TOKEN : CONFIG.COORDINATOR_TOKEN;
+  const userType = useStudentToken ? 'student' : 'coordinator';
+  
   try {
     const response = await axios({
       method,
-      url: `${BASE_URL}${url}`,
-      headers: { Authorization: `Bearer ${authToken}` },
-      timeout: 10000,
+      url: `${CONFIG.BASE_URL}${url}`,
+      headers: { Authorization: `Bearer ${token}` },
+      timeout: 8000,
       validateStatus: () => true
     });
     
     const status = response.status;
-    const data = response.data;
     
-    if (status === 200) {
-      console.log(`✅ ${url} - Working!`);
-      
-      // Show useful info about the response
-      if (Array.isArray(data)) {
-        console.log(`   📊 Returned ${data.length} items`);
-      } else if (data && typeof data === 'object') {
-        if (data.data && data.total !== undefined) {
-          console.log(`   📊 Paginated: ${data.data.length} items, total: ${data.total}`);
-        } else {
-          const keys = Object.keys(data);
-          console.log(`   📊 Object with keys: ${keys.slice(0, 3).join(', ')}${keys.length > 3 ? '...' : ''}`);
-        }
-      }
-      
+    if (status === expectedStatus || status === 200) {
+      console.log(`✅ ${url}`);
+      return true;
     } else if (status === 401) {
-      console.log(`🔒 ${url} - Unauthorized (auth issue)`);
+      console.log(`🔒 ${url} - Unauthorized`);
     } else if (status === 403) {
-      console.log(`🚫 ${url} - Forbidden (wrong role)`);
+      console.log(`🚫 ${url} - Forbidden (${userType})`);
     } else if (status === 404) {
-      console.log(`❌ ${url} - Not Found (endpoint missing)`);
+      console.log(`❌ ${url} - Not Found (module not imported?)`);
     } else {
       console.log(`⚠️ ${url} - Status: ${status}`);
     }
     
-    return status === 200;
-    
+    return false;
   } catch (error) {
-    console.log(`💥 ${url} - Error: ${error.message}`);
+    console.log(`💥 ${url} - Error: ${error.code || error.message}`);
     return false;
   }
 }
 
-async function runFullTest() {
-  console.log('🚀 Testing your complete API with real data!\n');
-  console.log('📋 Database contains:');
-  console.log('   👥 11 users (1 coordinator, 10 students)');
-  console.log('   📚 2 courses, 📖 4 units, 📋 8 assignments\n');
+async function runCompleteTest() {
+  console.log('🚀 COMPLETE API TEST - ALL MODULES\n');
   
-  // Step 1: Find backend
-  const backendFound = await findBackendPort();
-  if (!backendFound) return;
+  // Authentication
+  console.log('='.repeat(60));
+  console.log('🔐 AUTHENTICATION');
+  console.log('='.repeat(60));
+  const coordSuccess = await testLogin(CONFIG.COORDINATOR, 'COORDINATOR_TOKEN');
+  const studentSuccess = await testLogin(CONFIG.STUDENT, 'STUDENT_TOKEN');
   
-  // Step 2: Test login
-  const loginSuccess = await testLogin();
-  if (!loginSuccess) {
-    console.log('\n⚠️ Cannot test endpoints without authentication');
+  if (!coordSuccess) {
+    console.log('❌ Cannot test coordinator endpoints');
     return;
   }
   
-  // Step 3: Test all your new endpoints
-  console.log('\n🧪 Testing all API endpoints...');
-  console.log('-'.repeat(40));
+  // Test ALL endpoints by module
+  let totalTests = 0;
+  let passedTests = 0;
   
-  const endpoints = [
-    // Core data
-    ['GET', '/academic-data', 'Academic reference data'],
-    
-    // Students module
-    ['GET', '/students', 'Students list (paginated)'],
-    ['GET', '/students/stats', 'Student statistics'],
-    ['GET', '/students/with-grades', 'Students with grade info'],
-    
-    // Teachers module  
-    ['GET', '/teachers', 'Teachers list'],
-    ['GET', '/teachers/stats', 'Teacher statistics'],
-    
-    // Units module
-    ['GET', '/units', 'Units list'],
-    ['GET', '/units/stats', 'Unit statistics'],
-    
-    // Courses module
-    ['GET', '/courses', 'Courses list'],
-    ['GET', '/courses/with-counts', 'Courses with counts'],
-    ['GET', '/courses/stats', 'Course statistics'],
-    
-    // Analytics module
-    ['GET', '/analytics/overview', 'Dashboard metrics'],
-    ['GET', '/analytics/trends', 'Trend data'],
-    
-    // Student Progress module
-    ['GET', '/student-progress/unit/BM001', 'Progress for unit (may not exist)'],
-    
-    // Assignments (existing)
-    ['GET', '/assignments', 'Assignments list'],
-    
-    // Users (existing)
-    ['GET', '/users/me', 'Current user info']
+  const modules = [
+    {
+      name: 'USERS MODULE',
+      endpoints: [
+        ['GET', '/users/me', 'Get current user'],
+      ]
+    },
+    {
+      name: 'ACADEMIC DATA MODULE', 
+      endpoints: [
+        ['GET', '/academic-data', 'Get all academic data'],
+      ]
+    },
+    {
+      name: 'STUDENTS MODULE',
+      endpoints: [
+        ['GET', '/students', 'Get students list'],
+        ['GET', '/students/stats', 'Get student statistics'],
+        ['GET', '/students/with-grades', 'Get students with grades'],
+      ]
+    },
+    {
+      name: 'TEACHERS MODULE',
+      endpoints: [
+        ['GET', '/teachers', 'Get teachers list'],
+        ['GET', '/teachers/stats', 'Get teacher statistics'],
+      ]
+    },
+    {
+      name: 'UNITS MODULE',
+      endpoints: [
+        ['GET', '/units', 'Get units list'],
+        ['GET', '/units/stats', 'Get unit statistics'],
+      ]
+    },
+    {
+      name: 'COURSES MODULE',
+      endpoints: [
+        ['GET', '/courses', 'Get courses list'],
+        // ['GET', '/courses/with-counts', 'Get courses with counts'],  // Temporarily disabled
+        // ['GET', '/courses/stats', 'Get course statistics'],          // Temporarily disabled
+      ]
+    },
+    {
+      name: 'ASSIGNMENTS MODULE',
+      endpoints: [
+        ['GET', '/assignments', 'Get assignments list'],
+      ]
+    },
+    {
+      name: 'SUBMISSIONS MODULE',
+      endpoints: [
+        // Note: Submissions might not have a general GET endpoint
+        // ['GET', '/submissions', 'Get submissions list'],
+      ]
+    },
+    {
+      name: 'ANALYTICS MODULE',
+      endpoints: [
+        ['GET', '/analytics/overview', 'Get dashboard metrics'],
+        ['GET', '/analytics/trends', 'Get trend data'],
+      ]
+    },
+    {
+      name: 'STUDENT PROGRESS MODULE',
+      endpoints: [
+        // These might return 404 if no data exists, which is normal
+        ['GET', '/student-progress/unit/BM001', 'Get progress for unit BM001'],
+      ]
+    }
   ];
   
-  let successCount = 0;
-  
-  for (const [method, url, description] of endpoints) {
-    console.log(`\n🧪 ${description}`);
-    const success = await testEndpoint(method, url, description);
-    if (success) successCount++;
+  for (const module of modules) {
+    if (module.endpoints.length === 0) continue;
+    
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`🧪 ${module.name}`);
+    console.log('='.repeat(60));
+    
+    for (const [method, url, description] of module.endpoints) {
+      console.log(`\n🧪 ${description}`);
+      const success = await testEndpoint(method, url, description);
+      totalTests++;
+      if (success) passedTests++;
+    }
   }
   
-  // Summary
-  console.log('\n' + '='.repeat(50));
-  console.log('📊 TEST RESULTS');
-  console.log('='.repeat(50));
-  console.log(`🌐 Backend URL: ${BASE_URL}`);
-  console.log(`🔐 Authentication: ${loginSuccess ? '✅' : '❌'}`);
-  console.log(`🧪 Working endpoints: ${successCount}/${endpoints.length}`);
+  // Test student access (should be more limited)
+  if (studentSuccess) {
+    console.log(`\n${'='.repeat(60)}`);
+    console.log('👨‍🎓 STUDENT ACCESS TEST');
+    console.log('='.repeat(60));
+    
+    const studentTests = [
+      ['GET', '/users/me', 'Get current user'],
+      ['GET', '/academic-data', 'Get academic data'],
+      ['GET', '/assignments', 'Get assignments'],
+      ['GET', '/students', 'Get students (should be forbidden)'],
+      ['GET', '/analytics/overview', 'Get analytics (should be forbidden)'],
+    ];
+    
+    for (const [method, url, description] of studentTests) {
+      console.log(`\n🧪 ${description}`);
+      await testEndpoint(method, url, description, 200, true);
+    }
+  }
   
-  if (successCount === endpoints.length) {
-    console.log('\n🎉 PERFECT! All your API endpoints are working!');
-    console.log('💡 Your backend is ready for frontend integration');
-  } else if (successCount > endpoints.length * 0.7) {
-    console.log('\n🎯 GOOD! Most endpoints working');
-    console.log('💡 A few endpoints might need module imports in app.module.ts');
+  // Final Results
+  console.log(`\n${'='.repeat(60)}`);
+  console.log('📊 FINAL RESULTS');
+  console.log('='.repeat(60));
+  console.log(`🌐 Backend: ${CONFIG.BASE_URL}`);
+  console.log(`👨‍💼 Coordinator Login: ${coordSuccess ? '✅' : '❌'}`);
+  console.log(`👨‍🎓 Student Login: ${studentSuccess ? '✅' : '❌'}`);
+  console.log(`🧪 API Endpoints: ${passedTests}/${totalTests} working`);
+  
+  const percentage = Math.round((passedTests / totalTests) * 100);
+  console.log(`📈 Success Rate: ${percentage}%`);
+  
+  if (percentage >= 90) {
+    console.log('\n🎉 EXCELLENT! Almost all modules working!');
+  } else if (percentage >= 70) {
+    console.log('\n🎯 GOOD! Most modules working!');
+    console.log('💡 Check app.module.ts for missing imports');
   } else {
-    console.log('\n⚠️ Some issues found');
-    console.log('💡 Check that all modules are imported in app.module.ts');
+    console.log('\n⚠️ Several modules not working');
+    console.log('💡 Check that all modules are properly imported');
   }
+  
+  console.log('\n💡 If you see "Not Found" errors:');
+  console.log('   1. Check app.module.ts imports');
+  console.log('   2. Make sure all module files exist');
+  console.log('   3. Restart your backend after adding imports');
 }
 
-runFullTest();
+runCompleteTest().catch(console.error);

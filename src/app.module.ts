@@ -26,6 +26,7 @@ import { CoursesModule } from './courses/courses.module';
 import { AcademicDataModule } from './academic-data/academic-data.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { StudentProgressModule } from './student-progress/student-progress.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { StudentProgressModule } from './student-progress/student-progress.modul
     AcademicDataModule,
     TeachersModule,
     StudentProgressModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
