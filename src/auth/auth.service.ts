@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from '../prisma/prisma.service'; 
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
@@ -9,6 +10,7 @@ export class AuthService {
   constructor(
     private readonly db: DatabaseService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -42,15 +44,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Generate JWT token
-    const payload = { 
-      sub: user.id, 
-      email: user.email, 
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
-    const access_token = this.jwtService.sign(payload);
+    // Generate tokens
+    const tokens = await this.generateTokens(user);
 
     // Return user data without password
     const { password: _, ...userResult } = user;
@@ -59,8 +54,80 @@ export class AuthService {
       success: true,
       user: userResult,
       userType: userType,
-      access_token,
+      ...tokens,
     };
+  }
+
+  async generateTokens(user: any) {
+    const payload = { 
+      sub: user.id, 
+      email: user.email, 
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      iat: Math.floor(Date.now() / 1000),
+    };
+
+    // Generate access token (uses global JWT config)
+    const access_token = this.jwtService.sign(payload, {
+      expiresIn: '30m', // Match your app.module.ts setting
+    });
+
+    // Get JWT secret for refresh token
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET not configured');
+    }
+
+    // Generate refresh token with consistent config
+    const refresh_token = this.jwtService.sign(
+      { sub: user.id, type: 'refresh' },
+      {
+        secret: jwtSecret,
+        expiresIn: '7d',
+        issuer: 'final-project-be',      // Match global config
+        audience: 'final-project-fe',    // Match global config
+      }
+    );
+
+    return {
+      access_token,
+      refresh_token,
+      expires_in: 1800, // 30 minutes in seconds (match your 30m setting)
+    };
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      const jwtSecret = this.configService.get<string>('JWT_SECRET');
+      
+      if (!jwtSecret) {
+        throw new Error('JWT_SECRET not configured');
+      }
+
+      // Verify refresh token with consistent config
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: jwtSecret,
+        issuer: 'final-project-be',      // Match signing config
+        audience: 'final-project-fe',    // Match signing config
+      });
+
+      if (payload.type !== 'refresh') {
+        throw new UnauthorizedException('Invalid token type');
+      }
+
+      // Get user
+      const user = await this.validateUser(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Generate new tokens
+      return this.generateTokens(user);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 
   async validateUser(userId: string) {
@@ -81,23 +148,7 @@ export class AuthService {
     });
   }
 
-  async refreshToken(userId: string) {
-    const user = await this.validateUser(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    const payload = { 
-      sub: user.id, 
-      email: user.email, 
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
-    
-    return {
-      access_token: this.jwtService.sign(payload),
-      user,
-    };
+  async logout(userId: string) {
+    return { success: true, message: 'Logged out successfully' };
   }
 }
