@@ -2,7 +2,7 @@
 const axios = require('axios');
 
 const CONFIG = {
-  BASE_URL: 'http://localhost:3000',
+  BASE_URL: 'https://imajine-uni-api-production.up.railway.app',
   COORDINATOR_TOKEN: '',
   STUDENT_TOKEN: '',
   COORDINATOR: {

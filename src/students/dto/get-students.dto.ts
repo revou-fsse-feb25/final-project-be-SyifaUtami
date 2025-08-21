@@ -16,3 +16,4 @@ export class GetStudentsDto extends PaginationDto {
   @IsString()
   search?: string;
 }
+
