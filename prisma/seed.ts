@@ -12,6 +12,7 @@ async function seed() {
     // Clear existing data (cascade deletion will handle related records)
     console.log('🧹 Clearing existing data...');
     await prisma.user.deleteMany();
+    await prisma.teacher.deleteMany(); // NEW: Clear teachers
     await prisma.course.deleteMany();
     console.log('✅ Cleared all existing data');
 
@@ -43,7 +44,7 @@ async function seed() {
     const progressData = JSON.parse(fs.readFileSync(path.join(dataPath, 'studentProgress.json'), 'utf8'));
     console.log(`📈 Found ${progressData.length} progress records`);
 
-    // Read faculty data (for coordinators)
+    // Read faculty data (for coordinators and teachers)
     const facultyData = JSON.parse(fs.readFileSync(path.join(dataPath, 'faculty.json'), 'utf8'));
     const coordinatorsData = facultyData.faculty || facultyData;
     const teachersData = facultyData.teachers || []; 
@@ -136,7 +137,7 @@ async function seed() {
     });
     console.log(`✅ Created ${studentExtendedRecords.length} student records`);
 
-    // Create coordinators from faculty data
+    // Create coordinators from faculty data (USERS ONLY - no login for teachers)
     console.log('👨‍💼 Creating coordinator records...');
     const coordinatorRecords = await Promise.all(
       coordinatorsData.map(async (coordinator) => {
@@ -174,32 +175,44 @@ async function seed() {
     });
     console.log(`✅ Created ${coordinatorRecords.length} coordinators`);
 
-    // Create teachers from faculty data
+    // Create teachers in separate table (REFERENCE DATA ONLY - no login)
     console.log('👨‍🏫 Creating teacher records...');
-    const teacherRecords = await Promise.all(
-      teachersData.map(async (teacher) => {
-        const password = `${teacher.id}_Teacher2024!`;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        
-        console.log(`   📝 ${teacher.id}: ${password}`);
-        
-        return {
-          id: teacher.id,
-          firstName: teacher.firstName,
-          lastName: teacher.lastName || '',
-          email: teacher.email || `${teacher.id}@imajine.ac.id`,
-          password: hashedPassword,
-          role: 'COORDINATOR',
-          title: 'Teacher'
-        };
-      })
-    );
+    const teacherRecords = teachersData.map((teacher) => ({
+      id: teacher.id,
+      firstName: teacher.firstName,
+      lastName: teacher.lastName || '',
+      email: teacher.email,
+      title: 'Teacher',
+      department: null,
+      specialization: null
+    }));
 
-    await prisma.user.createMany({
+    await prisma.teacher.createMany({
       data: teacherRecords,
       skipDuplicates: true
     });
     console.log(`✅ Created ${teacherRecords.length} teachers`);
+
+    // Create teacher-unit assignments
+    console.log('🔗 Creating teacher-unit assignments...');
+    let assignmentCount = 0;
+    
+    for (const teacher of teachersData) {
+      if (teacher.unitsTeached && teacher.unitsTeached.length > 0) {
+        for (const unitCode of teacher.unitsTeached) {
+          await prisma.unitTeacher.create({
+            data: {
+              teacherId: teacher.id,
+              unitCode: unitCode,
+              role: 'Primary'
+            }
+          });
+          assignmentCount++;
+          console.log(`   🔗 ${teacher.firstName} → ${unitCode}`);
+        }
+      }
+    }
+    console.log(`✅ Created ${assignmentCount} teacher-unit assignments`);
 
     // Create assignments
     console.log('📝 Creating assignments...');
@@ -219,16 +232,39 @@ async function seed() {
 
     // Create student progress
     console.log('📈 Creating student progress records...');
-    const progressRecords = progressData.map((progress) => ({
-      studentId: progress.studentId,
-      unitCode: progress.unitCode,
-      week1Material: progress.week1Material === 'done' ? 'DONE' : 'NOT_DONE',
-      week2Material: progress.week2Material === 'done' ? 'DONE' : 'NOT_DONE',
-      week3Material: progress.week3Material === 'done' ? 'DONE' : 'NOT_DONE',
-      week4Material: progress.week4Material === 'done' ? 'DONE' : 'NOT_DONE',
-      updatedBy: progress.updatedBy || null,
-      lastUpdated: progress.lastUpdated ? new Date(progress.lastUpdated) : new Date()
-    }));
+    const progressRecords = progressData.map((progress) => {
+      // Create flexible progress data structure
+      const progressDataStructure = {};
+      
+      // Convert existing week structure to flexible format
+      if (progress.week1Material !== undefined) {
+        progressDataStructure['week1Material'] = progress.week1Material === 'done' ? 'DONE' : 'NOT_DONE';
+      }
+      if (progress.week2Material !== undefined) {
+        progressDataStructure['week2Material'] = progress.week2Material === 'done' ? 'DONE' : 'NOT_DONE';
+      }
+      if (progress.week3Material !== undefined) {
+        progressDataStructure['week3Material'] = progress.week3Material === 'done' ? 'DONE' : 'NOT_DONE';
+      }
+      if (progress.week4Material !== undefined) {
+        progressDataStructure['week4Material'] = progress.week4Material === 'done' ? 'DONE' : 'NOT_DONE';
+      }
+      
+      // Add any additional progress data from JSON
+      Object.keys(progress).forEach(key => {
+        if (!['studentId', 'unitCode', 'updatedBy', 'lastUpdated', 'week1Material', 'week2Material', 'week3Material', 'week4Material'].includes(key)) {
+          progressDataStructure[key] = progress[key];
+        }
+      });
+      
+      return {
+        studentId: progress.studentId,
+        unitCode: progress.unitCode,
+        progressData: progressDataStructure,
+        updatedBy: progress.updatedBy || null,
+        lastUpdated: progress.lastUpdated ? new Date(progress.lastUpdated) : new Date()
+      };
+    });
 
     await prisma.studentProgress.createMany({
       data: progressRecords,
@@ -287,6 +323,8 @@ async function seed() {
     const finalStudentUserCount = await prisma.user.count({ where: { role: 'STUDENT' } });
     const finalStudentCount = await prisma.student.count();
     const finalCoordinatorCount = await prisma.user.count({ where: { role: 'COORDINATOR' } });
+    const finalTeacherCount = await prisma.teacher.count();
+    const finalUnitTeacherCount = await prisma.unitTeacher.count();
     const finalCourseCount = await prisma.course.count();
     const finalUnitCount = await prisma.unit.count();
     const finalAssignmentCount = await prisma.assignment.count();
@@ -297,6 +335,8 @@ async function seed() {
     console.log(`   👥 Student Users: ${finalStudentUserCount}`);
     console.log(`   📚 Student Records: ${finalStudentCount}`);
     console.log(`   👨‍💼 Coordinators: ${finalCoordinatorCount}`);
+    console.log(`   👨‍🏫 Teachers: ${finalTeacherCount}`);
+    console.log(`   🔗 Teacher-Unit Assignments: ${finalUnitTeacherCount}`);
     console.log(`   📚 Courses: ${finalCourseCount}`);
     console.log(`   📖 Units: ${finalUnitCount}`);
     console.log(`   📝 Assignments: ${finalAssignmentCount}`);
@@ -308,7 +348,7 @@ async function seed() {
     console.log('\n🔑 Login Credentials:');
     console.log('   👥 Students: {studentId}_Student2024! (e.g., s001_Student2024!)');
     console.log('   👨‍💼 Coordinators: {coordinatorId}_Coord2024! (e.g., f001_Coord2024!)');
-    console.log('   👨‍🏫 Teachers: {teacherId}_Teacher2024! (e.g., t001_Teacher2024!)');
+    console.log('   👨‍🏫 Teachers: Reference data only - no login capability');
 
   } catch (error) {
     console.error('❌ Seeding failed:', error);

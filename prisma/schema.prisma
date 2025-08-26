@@ -1,4 +1,5 @@
 
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -42,7 +43,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Student specific fields
-  courseCode String? // "BM" or "BA"
+  courseCode String? 
   year       Int?
 
   // Coordinator specific fields  
@@ -60,18 +61,58 @@ model User {
   @@map("users")
 }
 
+// TEACHERS (Reference data only - no login capability)
+model Teacher {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String?
+  email       String?  @unique
+  title       String?  // "Professor", "Dr.", "Lecturer", etc.
+  department  String?
+  specialization String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  unitTeachers UnitTeacher[]
+  
+  @@map("teachers")
+}
+
+// UNIT-TEACHER RELATIONSHIP (Many-to-many)
+model UnitTeacher {
+  unitCode   String
+  teacherId  String
+  
+  // Additional fields for the relationship
+  role       String?  // "Primary", "Assistant", etc.
+  startDate  DateTime @default(now())
+  endDate    DateTime?
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  unit       Unit     @relation(fields: [unitCode], references: [code], onDelete: Cascade)
+  teacher    Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  
+  @@id([unitCode, teacherId])
+  @@map("unit_teachers")
+}
+
 // STUDENTS (Extended student-specific data)
 model Student {
-  id         String   @id // Same as User.id
-  userId     String   @unique // Foreign key to User
-  courseCode String   // "BM" or "BA"
+  id         String   @id 
+  userId     String   @unique 
+  courseCode String   
   year       Int
   
   // Student-specific fields
   enrollmentDate DateTime @default(now())
-  studentNumber  String?  @unique // e.g., "2024001"
-  status         String   @default("ACTIVE") // ACTIVE, INACTIVE, GRADUATED
-  gpa           Float?   // Calculated GPA
+  studentNumber  String?  @unique 
+  status         String   @default("ACTIVE") 
+  gpa           Float?   
   totalCredits  Int      @default(0)
   
   createdAt DateTime @default(now())
@@ -85,26 +126,10 @@ model Student {
   @@map("students")
 }
 
-// TEACHERS (Separate table for instructional staff - NOT users!)
-model Teacher {
-  id           String   @id @default(cuid()) // "t001", "t002", etc.
-  firstName    String
-  lastName     String?
-  email        String   @unique
-  title        String?  // "Professor", "Dr.", "Lecturer", etc.
-  department   String?
-  unitsTeached String[] // Array of unit codes ["BM001", "BA002"]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("teachers")
-}
-
 // COURSES
 model Course {
   id   String @id @default(cuid())
-  code String @unique // "BM", "BA"
+  code String @unique 
   name String
   
   createdAt DateTime @default(now())
@@ -119,32 +144,33 @@ model Course {
 // UNITS (subjects within courses)
 model Unit {
   id          String @id @default(cuid())
-  code        String @unique // "BM001", "BM002", "BA001", "BA002"
+  code        String @unique 
   name        String
   description String?
   courseCode  String
   currentWeek Int    @default(1)
-  teacherId   String? // Reference to Teacher (optional)
+  totalWeeks  Int    @default(12) // Flexible total weeks
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations (WITH CASCADE DELETION)
-  course          Course            @relation(fields: [courseCode], references: [code], onDelete: Cascade)
-  assignments     Assignment[]
-  studentProgress StudentProgress[]
-
+  course         Course            @relation(fields: [courseCode], references: [code], onDelete: Cascade)
+  assignments    Assignment[]
+  progress       StudentProgress[]
+  unitTeachers   UnitTeacher[]     
+  
   @@map("units")
 }
 
 // ASSIGNMENTS
 model Assignment {
-  id          String           @id // "BM0011", "BM0012", etc.
+  id          String           @id @default(cuid())
   name        String
   unitCode    String
   deadline    DateTime
   publishedAt DateTime
-  status      AssignmentStatus
+  status      AssignmentStatus @default(OPEN)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -152,24 +178,24 @@ model Assignment {
   // Relations (WITH CASCADE DELETION)
   unit                Unit                @relation(fields: [unitCode], references: [code], onDelete: Cascade)
   studentAssignments  StudentAssignment[]
-
+  
   @@map("assignments")
 }
 
-// STUDENT ASSIGNMENTS
+// STUDENT ASSIGNMENTS (submissions)
 model StudentAssignment {
   id               String           @id @default(cuid())
-  submissionId     String           @unique // "SUB_s001_BM0011_1"
+  submissionId     String           @unique
   studentId        String
   assignmentId     String
-  status           AssignmentStatus? // "open" or "closed" (assignment status) - optional
+  status           String?
   submissionStatus SubmissionStatus @default(EMPTY)
   submissionName   String?
   submittedAt      DateTime?
   grade            Float?
   comment          String?
   gradedBy         String?
-  gradedAt         DateTime?        // Added this field from your data
+  gradedAt         DateTime?
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -178,22 +204,18 @@ model StudentAssignment {
   user       User       @relation("StudentSubmissions", fields: [studentId], references: [id], onDelete: Cascade, map: "student_assignments_user_fkey")
   student    Student    @relation("StudentSubmissionsToStudent", fields: [studentId], references: [id], onDelete: Cascade, map: "student_assignments_student_fkey")
   assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, assignmentId])
+  
   @@map("student_assignments")
 }
 
-// STUDENT PROGRESS (weekly materials)
+// STUDENT PROGRESS (Flexible week structure)
 model StudentProgress {
-  id              String         @id @default(cuid())
-  studentId       String
-  unitCode        String
-  week1Material   MaterialStatus @default(NOT_DONE)
-  week2Material   MaterialStatus @default(NOT_DONE)
-  week3Material   MaterialStatus @default(NOT_DONE)
-  week4Material   MaterialStatus @default(NOT_DONE)
-  updatedBy       String?        // "student" or "coordinator"
-  lastUpdated     DateTime       @default(now())
+  id            String   @id @default(cuid())
+  studentId     String
+  unitCode      String
+  progressData  Json     // Store flexible progress data as JSON
+  updatedBy     String?
+  lastUpdated   DateTime @default(now())
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -202,7 +224,7 @@ model StudentProgress {
   user    User    @relation(fields: [studentId], references: [id], onDelete: Cascade, map: "student_progress_user_fkey")
   student Student @relation("StudentProgressToStudent", fields: [studentId], references: [id], onDelete: Cascade, map: "student_progress_student_fkey")
   unit    Unit    @relation(fields: [unitCode], references: [code], onDelete: Cascade)
-
+  
   @@unique([studentId, unitCode])
   @@map("student_progress")
 }
