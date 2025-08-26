@@ -45,8 +45,10 @@ async function seed() {
 
     // Read faculty data (for coordinators)
     const facultyData = JSON.parse(fs.readFileSync(path.join(dataPath, 'faculty.json'), 'utf8'));
-    const coordinatorsData = facultyData.faculty || facultyData; // Handle both nested and flat structure
+    const coordinatorsData = facultyData.faculty || facultyData;
+    const teachersData = facultyData.teachers || []; 
     console.log(`👨‍💼 Found ${coordinatorsData.length} coordinators`);
+    console.log(`👨‍🏫 Found ${teachersData.length} teachers`); 
 
     // Hash passwords securely with individual passwords
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '12');
@@ -172,6 +174,33 @@ async function seed() {
     });
     console.log(`✅ Created ${coordinatorRecords.length} coordinators`);
 
+    // Create teachers from faculty data
+    console.log('👨‍🏫 Creating teacher records...');
+    const teacherRecords = await Promise.all(
+      teachersData.map(async (teacher) => {
+        const password = `${teacher.id}_Teacher2024!`;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        
+        console.log(`   📝 ${teacher.id}: ${password}`);
+        
+        return {
+          id: teacher.id,
+          firstName: teacher.firstName,
+          lastName: teacher.lastName || '',
+          email: teacher.email || `${teacher.id}@imajine.ac.id`,
+          password: hashedPassword,
+          role: 'COORDINATOR',
+          title: 'Teacher'
+        };
+      })
+    );
+
+    await prisma.user.createMany({
+      data: teacherRecords,
+      skipDuplicates: true
+    });
+    console.log(`✅ Created ${teacherRecords.length} teachers`);
+
     // Create assignments
     console.log('📝 Creating assignments...');
     for (const assignment of assignmentsData) {
@@ -279,6 +308,7 @@ async function seed() {
     console.log('\n🔑 Login Credentials:');
     console.log('   👥 Students: {studentId}_Student2024! (e.g., s001_Student2024!)');
     console.log('   👨‍💼 Coordinators: {coordinatorId}_Coord2024! (e.g., f001_Coord2024!)');
+    console.log('   👨‍🏫 Teachers: {teacherId}_Teacher2024! (e.g., t001_Teacher2024!)');
 
   } catch (error) {
     console.error('❌ Seeding failed:', error);
