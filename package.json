@@ -18,7 +18,6 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:api": "ts-node test/test-api.ts",
     "test:api:watch": "nodemon --exec ts-node test/test-api.ts"
   },
@@ -39,6 +38,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "prisma": "^6.13.0",
+    "railway": "^2.0.17",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

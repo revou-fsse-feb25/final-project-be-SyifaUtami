@@ -1,11 +1,62 @@
+// src/submissions/submissions.service.ts
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../prisma/prisma.service';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { UpdateSubmissionDto } from './dto';
+import { CreateSubmissionDto } from './dto/create-submission.dto';
 
 @Injectable()
 export class SubmissionsService {
   constructor(private readonly db: DatabaseService) {}
+
+  async createSubmission(createSubmissionDto: CreateSubmissionDto) {
+    const { submissionId, studentId, assignmentId, submissionStatus, submissionName, submittedAt } = createSubmissionDto;
+
+    // Check if submission already exists
+    const existingSubmission = await this.db.studentAssignment.findUnique({
+      where: { submissionId },
+    });
+
+    if (existingSubmission) {
+      // Update existing submission
+      return this.db.studentAssignment.update({
+        where: { submissionId },
+        data: {
+          submissionStatus,
+          submissionName, // Just store the filename
+          submittedAt: submittedAt ? new Date(submittedAt) : null,
+        },
+        include: {
+          user: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+          assignment: true,
+        },
+      });
+    } else {
+      // Create new submission
+      return this.db.studentAssignment.create({
+        data: {
+          submissionId,
+          studentId,
+          assignmentId,
+          submissionStatus,
+          submissionName, // Just store the filename
+          submittedAt: submittedAt ? new Date(submittedAt) : null,
+          grade: null,
+          comment: null,
+          gradedBy: null,
+        },
+        include: {
+          user: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+          assignment: true,
+        },
+      });
+    }
+  }
 
   // GET /submissions/:submissionId - Individual submission with assignment
   async findOne(submissionId: string) {

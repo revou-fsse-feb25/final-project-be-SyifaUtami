@@ -1,7 +1,10 @@
-import { Controller, Get, Param, Put, Body, UseGuards } from '@nestjs/common';
+
+
+import { Controller, Get, Param, Put, Body, UseGuards, Post } from '@nestjs/common';
 import { SubmissionsService } from './submissions.service';
 import { UpdateGradeDto} from './dto/update-grade.dto';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
+import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -10,6 +13,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @UseGuards(JwtAuthGuard)
 export class SubmissionsController {
   constructor(private readonly submissionsService: SubmissionsService) {}
+
+  // NEW POST ENDPOINT
+  @Post()
+  async createSubmission(@Body() createSubmissionDto: CreateSubmissionDto) {
+    return this.submissionsService.createSubmission(createSubmissionDto);
+  }
 
   @Get(':submissionId')
   async findOne(@Param('submissionId') submissionId: string) {

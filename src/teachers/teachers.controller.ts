@@ -1,3 +1,4 @@
+// src/teachers/teachers.controller.ts - Simple fix, just remove @Roles decorator
 import { 
   Controller, 
   Get, 
@@ -18,35 +19,40 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('teachers')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard) // Only require authentication
 export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
+  // GET /teachers - Allow ALL authenticated users (students + coordinators)
   @Get()
-  @Roles('COORDINATOR')
   async findAll(@Query() dto: GetTeachersDto) {
     return this.teachersService.findAll(dto);
   }
 
+  // GET /teachers/:id - Allow ALL authenticated users  
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.teachersService.findOne(id);
+  }
+
+  // ADMIN FUNCTIONS - Coordinators only:
+
   @Get('stats')
+  @UseGuards(RolesGuard)
   @Roles('COORDINATOR')
   async getStats() {
     return this.teachersService.getTeacherStats();
   }
 
-  @Get(':id')
-  @Roles('COORDINATOR')
-  async findOne(@Param('id') id: string) {
-    return this.teachersService.findOne(id);
-  }
-
   @Post()
+  @UseGuards(RolesGuard)
   @Roles('COORDINATOR')
   async create(@Body() createTeacherDto: CreateTeacherDto) {
     return this.teachersService.create(createTeacherDto);
   }
 
   @Put(':id')
+  @UseGuards(RolesGuard)
   @Roles('COORDINATOR')
   async update(
     @Param('id') id: string,
@@ -56,6 +62,7 @@ export class TeachersController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
   @Roles('COORDINATOR')
   async remove(@Param('id') id: string) {
     return this.teachersService.remove(id);
