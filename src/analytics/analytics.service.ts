@@ -1,4 +1,4 @@
-// src/analytics/analytics.service.ts - FIXED to use proper Prisma Teacher model
+// src/analytics/analytics.service.ts - Debug version
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../prisma/prisma.service';
 import { 
@@ -15,13 +15,22 @@ export class AnalyticsService {
 
   // GET /analytics/overview - Dashboard metrics for coordinators
   async getDashboardMetrics(): Promise<DashboardMetrics> {
+    console.log('=== ANALYTICS DEBUG START ===');
+    
     try {
-      // Count from proper tables using Prisma models
-      const [studentCount, teacherCount, courseCount] = await Promise.all([
-        this.db.user.count({ where: { role: 'STUDENT' } }),
-        this.db.teacher.count(), //problem
-        this.db.course.count(),
-      ]);
+      console.log('About to count teachers from teacher table...');
+      const teacherCount = await this.db.teacher.count();
+      console.log('Teacher count result:', teacherCount);
+      
+      console.log('About to count students from user table...');
+      const studentCount = await this.db.user.count({ where: { role: 'STUDENT' } });
+      console.log('Student count result:', studentCount);
+      
+      console.log('About to count courses...');
+      const courseCount = await this.db.course.count();
+      console.log('Course count result:', courseCount);
+
+      console.log('=== COUNTS COMPLETE ===');
 
       // Calculate average progress
       const allProgress = await this.db.studentProgress.findMany();
@@ -54,14 +63,19 @@ export class AnalyticsService {
         ? Math.round((submittedAssignments / totalAssignments) * 100)
         : 0;
 
-      return {
+      const result = {
         studentCount,
-        teacherCount, // Now correctly counts from Teacher table
+        teacherCount,
         courseCount,
         avgProgress,
         avgGrade,
         submissionRate,
       };
+
+      console.log('=== FINAL RESULT ===', result);
+      console.log('=== ANALYTICS DEBUG END ===');
+
+      return result;
     } catch (error) {
       console.error('Error getting dashboard metrics:', error);
       
@@ -74,7 +88,6 @@ export class AnalyticsService {
         avgGrade: 0,
         submissionRate: 0,
       };
-      
     }
   }
 
@@ -97,9 +110,8 @@ export class AnalyticsService {
       where: { unitCode: { in: unitCodes } },
     });
 
-    // Get teachers - for now, count from teacher table (simplified)
-    const teacherResult = await this.db.$queryRaw`SELECT COUNT(*) as count FROM "teachers"`;
-    const teacherCount = Number((teacherResult as any)[0].count);
+    // Get teachers - use the same method as overview
+    const teacherCount = await this.db.teacher.count();
 
     // Calculate course progress
     const courseProgress = await this.db.studentProgress.findMany({
@@ -171,17 +183,14 @@ export class AnalyticsService {
 
   // Other methods remain unchanged
   async getUnitMetrics(unitCode: string): Promise<UnitMetrics> {
-    // Implementation remains the same as before
     throw new Error('Method not implemented yet');
   }
 
   async getStudentAnalytics(studentId: string): Promise<StudentAnalytics> {
-    // Implementation remains the same as before
     throw new Error('Method not implemented yet');
   }
 
   async getTrends(period?: string): Promise<TrendData[]> {
-    // Implementation remains the same as before
     return [];
   }
 }
