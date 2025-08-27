@@ -19,7 +19,7 @@ export class AnalyticsService {
       // Count from proper tables using Prisma models
       const [studentCount, teacherCount, courseCount] = await Promise.all([
         this.db.user.count({ where: { role: 'STUDENT' } }),
-        this.db.teacher.count(), // FIXED: Use proper Teacher model
+        this.db.teacher.count(), 
         this.db.course.count(),
       ]);
 
@@ -74,6 +74,7 @@ export class AnalyticsService {
         avgGrade: 0,
         submissionRate: 0,
       };
+      
     }
   }
 
