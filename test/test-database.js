@@ -1,85 +1,69 @@
-// test/db-connection-test.js - Direct database connection test
+// test-simple.js - Minimal database connection test
 const { PrismaClient } = require('@prisma/client');
 
-async function testDatabaseConnection() {
-  console.log('🗄️ Testing direct Supabase database connection...');
+async function simpleTest() {
+  console.log('🔍 Simple Database Connection Test');
+  console.log('==================================');
   
+  // Step 1: Check if DATABASE_URL exists
+  const dbUrl = process.env.DATABASE_URL;
+  console.log('1️⃣ DATABASE_URL check:');
+  if (!dbUrl) {
+    console.log('❌ DATABASE_URL not found in environment');
+    console.log('💡 Make sure you have a .env file with DATABASE_URL');
+    return;
+  }
+  
+  console.log('✅ DATABASE_URL found');
+  console.log(`   Length: ${dbUrl.length} characters`);
+  console.log(`   Starts with 'postgresql://': ${dbUrl.startsWith('postgresql://') ? '✅' : '❌'}`);
+  console.log(`   First 30 characters: ${dbUrl.substring(0, 30)}...`);
+  
+  // Step 2: Try to create Prisma client
+  console.log('\n2️⃣ Creating Prisma client...');
   const prisma = new PrismaClient({
-    log: ['query', 'info', 'warn', 'error'],
+    log: ['error'], // Only show errors
   });
+  console.log('✅ Prisma client created');
   
+  // Step 3: Test basic connection
+  console.log('\n3️⃣ Testing connection...');
   try {
-    // Test 1: Basic connection
-    console.log('🔌 Testing basic connection...');
     await prisma.$connect();
-    console.log('✅ Connected to Supabase database!');
+    console.log('✅ Connected successfully!');
     
-    // Test 2: Count records in each table
-    console.log('\n📊 Checking database contents...');
+    // Step 4: Test simple query
+    console.log('\n4️⃣ Testing simple query...');
+    const result = await prisma.$queryRaw`SELECT 1 as test`;
+    console.log('✅ Query successful:', result);
     
-    const [userCount, courseCount, unitCount, assignmentCount] = await Promise.all([
-      prisma.user.count().catch(() => 0),
-      prisma.course.count().catch(() => 0),
-      prisma.unit.count().catch(() => 0),
-      prisma.assignment.count().catch(() => 0)
-    ]);
-    
-    console.log(`👥 Users: ${userCount}`);
-    console.log(`📚 Courses: ${courseCount}`);
-    console.log(`📖 Units: ${unitCount}`);
-    console.log(`📋 Assignments: ${assignmentCount}`);
-    
-    // Test 3: Check if you have coordinator users
-    console.log('\n🔍 Checking for coordinator users...');
-    const coordinators = await prisma.user.findMany({
-      where: { role: 'COORDINATOR' },
-      select: { id: true, email: true, firstName: true }
-    });
-    
-    console.log(`👨‍💼 Coordinators found: ${coordinators.length}`);
-    coordinators.forEach(coord => {
-      console.log(`   - ${coord.email} (${coord.firstName})`);
-    });
-    
-    // Test 4: Check if you have student users  
-    console.log('\n🔍 Checking for student users...');
-    const students = await prisma.user.findMany({
-      where: { role: 'STUDENT' },
-      select: { id: true, email: true, firstName: true },
-      take: 5 // Just show first 5
-    });
-    
-    console.log(`👨‍🎓 Students found: ${students.length}`);
-    students.forEach(student => {
-      console.log(`   - ${student.email} (${student.firstName})`);
-    });
-    
-    if (coordinators.length === 0) {
-      console.log('\n⚠️ No coordinators found - you\'ll need to create one for testing');
-      console.log('💡 You can create one through your Supabase dashboard or seed script');
-    }
-    
-    if (userCount === 0) {
-      console.log('\n⚠️ No users found - your database might be empty');
-      console.log('💡 Run your seed script: npm run prisma:seed');
-    }
-    
-    console.log('\n✅ Database connection test completed!');
+    console.log('\n🎉 DATABASE CONNECTION IS WORKING!');
+    console.log('The issue is not with your DATABASE_URL.');
     
   } catch (error) {
-    console.log('❌ Database connection failed:');
-    console.log('Error:', error.message);
+    console.log('❌ Connection failed!');
+    console.log('Error code:', error.code);
+    console.log('Error message:', error.message);
+    
+    // Provide specific help based on error
+    if (error.message.includes("Can't reach database server")) {
+      console.log('\n🔧 CONNECTION ISSUE DETECTED:');
+      console.log('Your DATABASE_URL format might be wrong.');
+      console.log('Expected format:');
+      console.log('postgresql://postgres:password@db.projectref.supabase.co:5432/postgres');
+    }
     
     if (error.message.includes('password authentication failed')) {
-      console.log('\n💡 Possible fixes:');
-      console.log('   1. Check your DATABASE_URL password');
-      console.log('   2. Reset your Supabase database password');
-      console.log('   3. Check if your IP is allowed in Supabase settings');
+      console.log('\n🔧 AUTHENTICATION ISSUE DETECTED:');
+      console.log('Your password is incorrect.');
+      console.log('Reset your Supabase database password and update DATABASE_URL.');
     }
     
   } finally {
     await prisma.$disconnect();
+    console.log('\n🔌 Disconnected from database');
   }
 }
 
-testDatabaseConnection();
+// Run the test
+simpleTest().catch(console.error);
