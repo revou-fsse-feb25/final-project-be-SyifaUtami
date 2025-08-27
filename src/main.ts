@@ -10,8 +10,12 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',  // Local development
       'http://localhost:3001',  // Local development alt
-
+      // Add your production frontend URLs here when deployed
+      'https://your-frontend-domain.com',
+      'https://your-frontend-domain.vercel.app',
     ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
   });
   
