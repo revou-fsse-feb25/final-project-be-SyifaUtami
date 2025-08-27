@@ -16,7 +16,7 @@ export class AnalyticsService {
   async getDashboardMetrics(): Promise<DashboardMetrics> {
     const [studentCount, teacherCount, courseCount] = await Promise.all([
       this.db.user.count({ where: { role: 'STUDENT' } }),
-      this.db.user.count({ where: { role: 'COORDINATOR' } }),
+      this.db.teacher.count(), // FIXED: Use teachers table instead of coordinators
       this.db.course.count(),
     ]);
 
@@ -80,13 +80,11 @@ export class AnalyticsService {
       where: { unitCode: { in: unitCodes } },
     });
 
-    // Get teachers (coordinators managing this course)
-    const teacherCount = await this.db.user.count({
-      where: { 
-        role: 'COORDINATOR',
-        courseManaged: { has: courseCode },
-      },
-    });
+    // FIXED: Get teachers assigned to units in this course
+    const teacherCount = await this.db.unitTeacher.groupBy({
+      by: ['teacherId'],
+      where: { unitCode: { in: unitCodes } },
+    }).then(results => results.length);
 
     // Calculate course progress
     const courseProgress = await this.db.studentProgress.findMany({
@@ -173,12 +171,9 @@ export class AnalyticsService {
       where: { role: 'STUDENT', courseCode: unit.courseCode },
     });
 
-    // Get teachers for this unit (assuming teachers assigned to course)
-    const teacherCount = await this.db.user.count({
-      where: {
-        role: 'COORDINATOR',
-        courseManaged: { has: unit.courseCode },
-      },
+    // FIXED: Get teachers assigned to this specific unit
+    const teacherCount = await this.db.unitTeacher.count({
+      where: { unitCode },
     });
 
     // Get assignments in this unit
@@ -279,6 +274,12 @@ export class AnalyticsService {
       },
     });
 
+    // Get student's progress
+    const progress = await this.db.studentProgress.findMany({
+      where: { studentId },
+      include: { unit: true },
+    });
+
     // Calculate student metrics
     const totalAssignments = submissions.length;
     const submittedAssignments = submissions.filter(s => s.submissionStatus === 'SUBMITTED').length;
@@ -288,18 +289,18 @@ export class AnalyticsService {
       ? Math.round(gradedAssignments.reduce((sum, sub) => sum + (sub.grade || 0), 0) / gradedAssignments.length)
       : 0;
 
-    // Get student progress
-    const progress = await this.db.studentProgress.findMany({
-      where: { studentId },
-    });
+    const submissionRate = totalAssignments > 0 
+      ? Math.round((submittedAssignments / totalAssignments) * 100)
+      : 0;
 
+    // Calculate overall progress
     const overallProgress = progress.length > 0
-      ? Math.round(progress.reduce((sum, prog) => {
+      ? Math.round(progress.reduce((sum, p) => {
           const completed = [
-            prog.week1Material === 'DONE' ? 1 : 0,
-            prog.week2Material === 'DONE' ? 1 : 0,
-            prog.week3Material === 'DONE' ? 1 : 0,
-            prog.week4Material === 'DONE' ? 1 : 0,
+            p.week1Material === 'DONE' ? 1 : 0,
+            p.week2Material === 'DONE' ? 1 : 0,
+            p.week3Material === 'DONE' ? 1 : 0,
+            p.week4Material === 'DONE' ? 1 : 0,
           ].reduce((weekSum, week) => weekSum + week, 0);
           return sum + (completed / 4) * 100;
         }, 0) / progress.length)
@@ -310,7 +311,7 @@ export class AnalyticsService {
       metrics: {
         totalAssignments,
         submittedAssignments,
-        submissionRate: totalAssignments > 0 ? Math.round((submittedAssignments / totalAssignments) * 100) : 0,
+        submissionRate,
         averageGrade,
         overallProgress,
         gradedAssignments: gradedAssignments.length,
@@ -320,28 +321,35 @@ export class AnalyticsService {
     };
   }
 
-  // GET /analytics/trends - Get trending data over time
-  async getTrends(period: 'week' | 'month' | 'quarter' = 'month'): Promise<TrendData[]> {
+  // GET /analytics/trends - Trending data over time
+  async getTrends(period: 'week' | 'month' | 'quarter' = 'week'): Promise<TrendData[]> {
     const now = new Date();
-    let startDate: Date;
+    let dateRange: Date;
+    let groupBy: string;
 
     switch (period) {
       case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        dateRange = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        groupBy = 'day';
+        break;
+      case 'month':
+        dateRange = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        groupBy = 'week';
         break;
       case 'quarter':
-        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        dateRange = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        groupBy = 'month';
         break;
-      default: // month
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      default:
+        dateRange = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        groupBy = 'day';
     }
 
     // Get submissions over time
     const submissions = await this.db.studentAssignment.findMany({
       where: {
-        submittedAt: {
-          gte: startDate,
-        },
+        submittedAt: { gte: dateRange },
+        submissionStatus: 'SUBMITTED',
       },
       select: {
         submittedAt: true,
@@ -349,31 +357,47 @@ export class AnalyticsService {
       },
     });
 
-    // Group by date and calculate daily metrics
-    const dailyMetrics = submissions.reduce((acc, submission) => {
-      if (!submission.submittedAt) return acc;
-      
-      const date = submission.submittedAt.toISOString().split('T')[0];
-      if (!acc[date]) {
-        acc[date] = { submissions: 0, totalGrade: 0, gradeCount: 0 };
-      }
-      
-      acc[date].submissions++;
-      if (submission.grade !== null) {
-        acc[date].totalGrade += submission.grade;
-        acc[date].gradeCount++;
-      }
-      
-      return acc;
-    }, {} as Record<string, { submissions: number; totalGrade: number; gradeCount: number }>);
+    // Group submissions by date period
+    const trendMap = new Map<string, { submissions: number; totalGrades: number; gradeCount: number }>();
 
-    // Convert to array format
-    const trends = Object.entries(dailyMetrics).map(([date, data]) => ({
+    submissions.forEach(sub => {
+      if (!sub.submittedAt) return;
+      
+      let dateKey: string;
+      const date = new Date(sub.submittedAt);
+      
+      switch (groupBy) {
+        case 'day':
+          dateKey = date.toISOString().split('T')[0];
+          break;
+        case 'week':
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          dateKey = weekStart.toISOString().split('T')[0];
+          break;
+        case 'month':
+          dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          break;
+        default:
+          dateKey = date.toISOString().split('T')[0];
+      }
+
+      const existing = trendMap.get(dateKey) || { submissions: 0, totalGrades: 0, gradeCount: 0 };
+      existing.submissions++;
+      
+      if (sub.grade !== null) {
+        existing.totalGrades += sub.grade;
+        existing.gradeCount++;
+      }
+      
+      trendMap.set(dateKey, existing);
+    });
+
+    // Convert to array and calculate averages
+    return Array.from(trendMap.entries()).map(([date, data]) => ({
       date,
       submissions: data.submissions,
-      averageGrade: data.gradeCount > 0 ? Math.round(data.totalGrade / data.gradeCount) : 0,
-    }));
-
-    return trends.sort((a, b) => a.date.localeCompare(b.date));
+      averageGrade: data.gradeCount > 0 ? Math.round(data.totalGrades / data.gradeCount) : 0,
+    })).sort((a, b) => a.date.localeCompare(b.date));
   }
 }

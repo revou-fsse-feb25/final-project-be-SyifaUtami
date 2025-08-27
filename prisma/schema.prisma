@@ -1,5 +1,4 @@
 
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -208,14 +207,17 @@ model StudentAssignment {
   @@map("student_assignments")
 }
 
-// STUDENT PROGRESS (Flexible week structure)
+// STUDENT PROGRESS
 model StudentProgress {
-  id            String   @id @default(cuid())
+  id            String         @id @default(cuid())
   studentId     String
   unitCode      String
-  progressData  Json     // Store flexible progress data as JSON
+  week1Material MaterialStatus @default(NOT_DONE)
+  week2Material MaterialStatus @default(NOT_DONE)
+  week3Material MaterialStatus @default(NOT_DONE)
+  week4Material MaterialStatus @default(NOT_DONE)
   updatedBy     String?
-  lastUpdated   DateTime @default(now())
+  lastUpdated   DateTime       @default(now())
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

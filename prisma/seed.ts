@@ -232,39 +232,16 @@ async function seed() {
 
     // Create student progress
     console.log('📈 Creating student progress records...');
-    const progressRecords = progressData.map((progress) => {
-      // Create flexible progress data structure
-      const progressDataStructure = {};
-      
-      // Convert existing week structure to flexible format
-      if (progress.week1Material !== undefined) {
-        progressDataStructure['week1Material'] = progress.week1Material === 'done' ? 'DONE' : 'NOT_DONE';
-      }
-      if (progress.week2Material !== undefined) {
-        progressDataStructure['week2Material'] = progress.week2Material === 'done' ? 'DONE' : 'NOT_DONE';
-      }
-      if (progress.week3Material !== undefined) {
-        progressDataStructure['week3Material'] = progress.week3Material === 'done' ? 'DONE' : 'NOT_DONE';
-      }
-      if (progress.week4Material !== undefined) {
-        progressDataStructure['week4Material'] = progress.week4Material === 'done' ? 'DONE' : 'NOT_DONE';
-      }
-      
-      // Add any additional progress data from JSON
-      Object.keys(progress).forEach(key => {
-        if (!['studentId', 'unitCode', 'updatedBy', 'lastUpdated', 'week1Material', 'week2Material', 'week3Material', 'week4Material'].includes(key)) {
-          progressDataStructure[key] = progress[key];
-        }
-      });
-      
-      return {
-        studentId: progress.studentId,
-        unitCode: progress.unitCode,
-        progressData: progressDataStructure,
-        updatedBy: progress.updatedBy || null,
-        lastUpdated: progress.lastUpdated ? new Date(progress.lastUpdated) : new Date()
-      };
-    });
+    const progressRecords = progressData.map((progress) => ({
+      studentId: progress.studentId,
+      unitCode: progress.unitCode,
+      week1Material: progress.week1Material === 'done' ? 'DONE' : 'NOT_DONE',
+      week2Material: progress.week2Material === 'done' ? 'DONE' : 'NOT_DONE',
+      week3Material: progress.week3Material === 'done' ? 'DONE' : 'NOT_DONE',
+      week4Material: progress.week4Material === 'done' ? 'DONE' : 'NOT_DONE',
+      updatedBy: progress.updatedBy || null,
+      lastUpdated: progress.lastUpdated ? new Date(progress.lastUpdated) : new Date()
+    }));
 
     await prisma.studentProgress.createMany({
       data: progressRecords,
