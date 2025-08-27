@@ -25,7 +25,6 @@ export class CoursesService {
         units: {
           include: {
             assignments: true,
-            studentProgress: true,
           },
         },
       },
