@@ -60,15 +60,12 @@ model User {
   @@map("users")
 }
 
-// TEACHERS (Reference data only - no login capability)
 model Teacher {
-  id          String   @id @default(cuid())
+  id          String   @id              // Manual ID (no autogeneration)
   firstName   String
   lastName    String?
   email       String?  @unique
   title       String?  // "Professor", "Dr.", "Lecturer", etc.
-  department  String?
-  specialization String?
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

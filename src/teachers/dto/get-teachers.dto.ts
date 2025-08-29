@@ -1,15 +1,19 @@
+// src/teachers/dto/get-teachers.dto.ts
+import { IsOptional, IsString, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
 
-import { IsOptional, IsString } from 'class-validator';
-import { PaginationDto } from '../../common/dto/pagination.dto';
+export class GetTeachersDto {
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  @Min(1)
+  page?: number;
 
-export class GetTeachersDto extends PaginationDto {
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  @Min(1)
+  limit?: number;
+
   @IsOptional()
   @IsString()
   search?: string;
-
-  @IsOptional()
-  @IsString()
-  unitCode?: string;
 }
-export * from './create-teacher.dto';
-export * from './update-teacher.dto';

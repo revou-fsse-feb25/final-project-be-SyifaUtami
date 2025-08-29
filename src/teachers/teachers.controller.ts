@@ -1,9 +1,8 @@
-// src/teachers/teachers.controller.ts - Simple fix, just remove @Roles decorator
+// src/teachers/teachers.controller.ts - Simple version (GET, CREATE, DELETE only)
 import { 
   Controller, 
   Get, 
   Post, 
-  Put, 
   Delete, 
   Body, 
   Param, 
@@ -12,14 +11,13 @@ import {
 } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
-import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { GetTeachersDto } from './dto/get-teachers.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('teachers')
-@UseGuards(JwtAuthGuard) // Only require authentication
+@UseGuards(JwtAuthGuard)
 export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
@@ -29,14 +27,7 @@ export class TeachersController {
     return this.teachersService.findAll(dto);
   }
 
-  // GET /teachers/:id - Allow ALL authenticated users  
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.teachersService.findOne(id);
-  }
-
-  // ADMIN FUNCTIONS - Coordinators only:
-
+  // GET /teachers/stats - Coordinators only
   @Get('stats')
   @UseGuards(RolesGuard)
   @Roles('COORDINATOR')
@@ -44,6 +35,13 @@ export class TeachersController {
     return this.teachersService.getTeacherStats();
   }
 
+  // GET /teachers/:id - Allow ALL authenticated users  
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.teachersService.findOne(id);
+  }
+
+  // POST /teachers - Coordinators only
   @Post()
   @UseGuards(RolesGuard)
   @Roles('COORDINATOR')
@@ -51,16 +49,7 @@ export class TeachersController {
     return this.teachersService.create(createTeacherDto);
   }
 
-  @Put(':id')
-  @UseGuards(RolesGuard)
-  @Roles('COORDINATOR')
-  async update(
-    @Param('id') id: string,
-    @Body() updateTeacherDto: UpdateTeacherDto
-  ) {
-    return this.teachersService.update(id, updateTeacherDto);
-  }
-
+  // DELETE /teachers/:id - Coordinators only
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles('COORDINATOR')

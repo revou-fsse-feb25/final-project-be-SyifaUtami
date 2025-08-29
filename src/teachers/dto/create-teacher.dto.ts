@@ -1,8 +1,13 @@
-import { IsEmail, IsString, IsOptional, IsArray, MinLength } from 'class-validator';
+// src/teachers/dto/create-teacher.dto.ts
+import { IsString, IsEmail, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class CreateTeacherDto {
   @IsString()
-  @MinLength(1)
+  @IsNotEmpty()
+  id: string;
+
+  @IsString()
+  @IsNotEmpty()
   firstName: string;
 
   @IsString()
@@ -10,18 +15,10 @@ export class CreateTeacherDto {
   lastName?: string;
 
   @IsEmail()
-  email: string;
-
-  @IsString()
-  @MinLength(6)
   @IsOptional()
-  password?: string;
+  email?: string;
 
   @IsString()
   @IsOptional()
   title?: string;
-
-  @IsArray()
-  @IsOptional()
-  unitsTeached?: string[];
 }

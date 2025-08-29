@@ -1,14 +1,13 @@
-// src/teachers/teachers.service.ts - FIXED to use proper Prisma Teacher model
-import { Injectable, NotFoundException } from '@nestjs/common';
+// src/teachers/teachers.service.ts - Updated for simplified Teacher model
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { DatabaseService } from '../prisma/prisma.service';
-import { GetTeachersDto } from './dto/get-teachers.dto';
 
 @Injectable()
 export class TeachersService {
   constructor(private readonly db: DatabaseService) {}
 
   // GET /teachers - List all teachers with their units
-  async findAll(dto: GetTeachersDto = {}) {
+  async findAll(dto: any = {}) {
     const { page = 1, limit = 20, search } = dto;
     const skip = (page - 1) * limit;
 
@@ -20,6 +19,7 @@ export class TeachersService {
         { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { title: { contains: search, mode: 'insensitive' } },
+        { id: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -38,7 +38,7 @@ export class TeachersService {
           },
           skip,
           take: limit,
-          orderBy: { firstName: 'asc' }
+          orderBy: { id: 'asc' }
         }),
         this.db.teacher.count({ where })
       ]);
@@ -50,61 +50,51 @@ export class TeachersService {
         lastName: teacher.lastName,
         email: teacher.email,
         title: teacher.title,
-        department: teacher.department,
-        specialization: teacher.specialization,
-        unitsTeached: teacher.unitTeachers.map(ut => ut.unit.code),
+        unitsTeached: teacher.unitTeachers.map(ut => ({
+          code: ut.unit.code,
+          name: ut.unit.name,
+          role: ut.role
+        })),
         createdAt: teacher.createdAt,
         updatedAt: teacher.updatedAt
       }));
-
-      const totalPages = Math.ceil(total / limit);
 
       return {
         success: true,
         data: teachersWithUnits,
         total,
         page,
-        limit,
-        totalPages,
+        totalPages: Math.ceil(total / limit)
       };
     } catch (error) {
-      console.error('Error fetching teachers:', error);
-      return {
-        success: false,
-        data: [],
-        total: 0,
-        page: 1,
-        limit,
-        totalPages: 0,
-        error: 'Failed to fetch teachers'
-      };
+      throw new Error(`Failed to fetch teachers: ${error.message}`);
     }
   }
 
-  // GET /teachers/stats - Simple teacher count
+  // GET /teachers/stats - Get teacher statistics  
   async getTeacherStats() {
     try {
-      const totalTeachers = await this.db.teacher.count();
+      const [total, withEmail] = await Promise.all([
+        this.db.teacher.count(),
+        this.db.teacher.count({
+          where: { email: { not: null } }
+        })
+      ]);
 
       return {
         success: true,
         data: {
-          totalTeachers
+          total,
+          withEmail,
+          withoutEmail: total - withEmail
         }
       };
     } catch (error) {
-      console.error('Error fetching teacher stats:', error);
-      return {
-        success: false,
-        data: {
-          totalTeachers: 0
-        },
-        error: 'Failed to fetch teacher stats'
-      };
+      throw new Error(`Failed to get teacher stats: ${error.message}`);
     }
   }
 
-  // GET /teachers/:id - Single teacher
+  // GET /teachers/:id - Get single teacher details
   async findOne(id: string) {
     try {
       const teacher = await this.db.teacher.findUnique({
@@ -119,165 +109,129 @@ export class TeachersService {
           }
         }
       });
-      
-      if (!teacher) {
-        throw new NotFoundException('Teacher not found');
-      }
 
-      // Transform to include unitsTeached array
-      const teacherWithUnits = {
-        id: teacher.id,
-        firstName: teacher.firstName,
-        lastName: teacher.lastName,
-        email: teacher.email,
-        title: teacher.title,
-        department: teacher.department,
-        specialization: teacher.specialization,
-        unitsTeached: teacher.unitTeachers.map(ut => ut.unit.code),
-        createdAt: teacher.createdAt,
-        updatedAt: teacher.updatedAt
-      };
+      if (!teacher) {
+        throw new NotFoundException(`Teacher with ID ${id} not found`);
+      }
 
       return {
         success: true,
-        data: teacherWithUnits
+        data: {
+          ...teacher,
+          unitsTeached: teacher.unitTeachers.map(ut => ({
+            code: ut.unit.code,
+            name: ut.unit.name,
+            role: ut.role
+          }))
+        }
       };
     } catch (error) {
-      console.error('Error fetching teacher:', error);
-      
       if (error instanceof NotFoundException) {
         throw error;
       }
-      
-      return {
-        success: false,
-        data: null,
-        error: 'Failed to fetch teacher'
-      };
+      throw new Error(`Failed to fetch teacher: ${error.message}`);
     }
   }
 
-  // POST /teachers - Create new teacher
+  // POST /teachers - Create new teacher (manual ID required)
   async create(createTeacherDto: any) {
     try {
-      const { firstName, lastName, email, title, department, specialization, unitsTeached } = createTeacherDto;
+      const { id, firstName, lastName, email, title } = createTeacherDto;
 
-      // Create the teacher
+      // Validate required fields
+      if (!id) {
+        throw new ConflictException('Teacher ID is required');
+      }
+      if (!firstName) {
+        throw new ConflictException('First name is required');
+      }
+
+      // Check for ID uniqueness
+      const existingTeacherById = await this.db.teacher.findUnique({
+        where: { id }
+      });
+      
+      if (existingTeacherById) {
+        throw new ConflictException(`Teacher with ID ${id} already exists`);
+      }
+
+      // Check for email uniqueness if provided
+      if (email) {
+        const existingTeacherByEmail = await this.db.teacher.findUnique({
+          where: { email }
+        });
+        
+        if (existingTeacherByEmail) {
+          throw new ConflictException(`Teacher with email ${email} already exists`);
+        }
+      }
+
       const teacher = await this.db.teacher.create({
         data: {
+          id,
           firstName,
           lastName,
           email,
-          title,
-          department,
-          specialization
+          title
+        },
+        include: {
+          unitTeachers: {
+            include: {
+              unit: {
+                select: { code: true, name: true }
+              }
+            }
+          }
         }
       });
 
-      // Create unit-teacher relationships if units provided
-      if (unitsTeached && unitsTeached.length > 0) {
-        await this.db.unitTeacher.createMany({
-          data: unitsTeached.map((unitCode: string) => ({
-            teacherId: teacher.id,
-            unitCode,
-            role: 'Primary'
-          })),
-          skipDuplicates: true
-        });
-      }
-
       return {
         success: true,
-        data: teacher
-      };
-    } catch (error) {
-      console.error('Error creating teacher:', error);
-      return {
-        success: false,
-        data: null,
-        error: 'Failed to create teacher'
-      };
-    }
-  }
-
-  // PUT /teachers/:id - Update teacher
-  async update(id: string, updateTeacherDto: any) {
-    try {
-      const { unitsTeached, ...updateData } = updateTeacherDto;
-
-      // Update teacher basic info
-      const teacher = await this.db.teacher.update({
-        where: { id },
-        data: updateData
-      });
-
-      // Update unit relationships if provided
-      if (unitsTeached) {
-        // Remove existing relationships
-        await this.db.unitTeacher.deleteMany({
-          where: { teacherId: id }
-        });
-
-        // Create new relationships
-        if (unitsTeached.length > 0) {
-          await this.db.unitTeacher.createMany({
-            data: unitsTeached.map((unitCode: string) => ({
-              teacherId: id,
-              unitCode,
-              role: 'Primary'
-            })),
-            skipDuplicates: true
-          });
+        data: {
+          ...teacher,
+          unitsTeached: teacher.unitTeachers.map(ut => ({
+            code: ut.unit.code,
+            name: ut.unit.name,
+            role: ut.role
+          }))
         }
-      }
-
-      return {
-        success: true,
-        data: teacher
       };
     } catch (error) {
-      console.error('Error updating teacher:', error);
-      
-      if (error.code === 'P2025') {
-        throw new NotFoundException('Teacher not found');
+      if (error instanceof ConflictException) {
+        throw error;
       }
-      
-      return {
-        success: false,
-        data: null,
-        error: 'Failed to update teacher'
-      };
+      throw new Error(`Failed to create teacher: ${error.message}`);
     }
   }
 
-  // DELETE /teachers/:id - Remove teacher
+
+
+  // DELETE /teachers/:id - Delete teacher
   async remove(id: string) {
     try {
-      // Delete unit relationships first
-      await this.db.unitTeacher.deleteMany({
-        where: { teacherId: id }
+      // Check if teacher exists
+      const existingTeacher = await this.db.teacher.findUnique({
+        where: { id }
       });
 
-      // Delete teacher
+      if (!existingTeacher) {
+        throw new NotFoundException(`Teacher with ID ${id} not found`);
+      }
+
+      // Delete teacher (CASCADE will handle unit_teachers relationships)
       await this.db.teacher.delete({
         where: { id }
       });
 
       return {
         success: true,
-        message: 'Teacher deleted successfully'
+        message: `Teacher ${id} deleted successfully`
       };
     } catch (error) {
-      console.error('Error deleting teacher:', error);
-      
-      if (error.code === 'P2025') {
-        throw new NotFoundException('Teacher not found');
+      if (error instanceof NotFoundException) {
+        throw error;
       }
-      
-      return {
-        success: false,
-        error: 'Failed to delete teacher'
-      };
+      throw new Error(`Failed to delete teacher: ${error.message}`);
     }
   }
 }
