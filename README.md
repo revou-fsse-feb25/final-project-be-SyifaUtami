@@ -1,101 +1,378 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Imajine University LMS - Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A comprehensive Learning Management System backend built with NestJS, TypeScript, and PostgreSQL. This API provides robust endpoints for student and coordinator management, academic progress tracking, assignments, and analytics.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Live Deployment
 
-## Description
+- **API URL**: [https://imajine-uni-api-production.up.railway.app](https://imajine-uni-api-production.up.railway.app)
+- **Database**: PostgreSQL hosted on Railway
+- **Frontend**: [https://imajine-uni-frontend.vercel.app](https://imajine-uni-frontend.vercel.app)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Info
 
-## Project setup
+- **Framework**: NestJS with TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT with refresh tokens
+- **Validation**: class-validator and class-transformer
+- **Security**: bcrypt for password hashing
+- **Testing**: Jest with e2e testing support
+- **Deployment**: Railway with automatic deployments
+- **API Documentation**: RESTful endpoints with comprehensive error handling
 
-```bash
-$ npm install
+## Data Overview
+
+### **Structure**
+```
+src/
+├── auth/                    # Authentication & authorization
+├── users/                   # User management (students & coordinators)
+├── students/                # Student-specific operations
+├── teachers/                # Teacher management (reference data)
+├── courses/                 # Course management
+├── units/                   # Unit management within courses
+├── assignments/             # Assignment management
+├── submissions/             # Assignment submissions
+├── student-progress/        # Weekly progress tracking
+├── analytics/               # Performance metrics & insights
+├── academic-data/           # Combined academic data endpoints
+└── prisma/                  # Database service & configuration
 ```
 
-## Compile and run the project
+### **Database Schema**
 
-```bash
-# development
-$ npm run start
+<img width="2414" height="1618" alt="supabase-schema-hoqevasoqryeqnjvdnjg" src="https://github.com/user-attachments/assets/0ed0ce3b-3693-4754-bc0d-fb4c6e18e47a" />
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Run tests
+
+
+Users (Students & Coordinators)
+├── Authentication (JWT tokens)
+├── Role-based access control
+└── Profile management
+
+Teachers (Reference data only)
+├── Faculty information
+├── Unit assignments
+└── Contact details
+
+Academic Structure
+├── Courses (BM, BA)
+├── Units (4 weeks each)
+├── Assignments (OPEN/CLOSED status)
+└── Submissions (graded/ungraded)
+
+Progress Tracking
+├── Weekly material completion
+├── Assignment submission status
+├── Grade management
+└── Analytics & reporting
+```
+
+### Authentication & Security
+
+### **JWT Authentication System**
+- **Access Token**: 30 minutes (for API requests)
+- **Refresh Token**: 7 days (for token renewal)
+- **Password Security**: bcrypt with configurable salt rounds
+- **Role-based Access**: Student and Coordinator roles
+
+### **Security Features**
+- Password hashing with bcrypt
+- JWT token validation on protected routes
+- Role-based route protection
+- Input validation and sanitization
+- Environment variable protection
+- CORS configuration for frontend integration
+
+### **Test Credentials**
+```bash
+# Coordinator Access
+Email: coordinator@imajine.ac.id
+Password: coordinator123
+UserType: coordinator
+
+# Student Access  
+Email: TomHolland@imajine.ac.id
+Password: student123
+UserType: student
+```
+
+## API Documentation
+
+### **Authentication Endpoints**
+```bash
+POST /auth/login              # User login
+POST /auth/refresh            # Refresh JWT token
+POST /auth/logout             # User logout
+GET  /auth/profile            # Get current user profile
+```
+
+### **User Management**
+```bash
+GET  /users/me                # Get current user data
+PUT  /users/profile           # Update user profile
+```
+
+### **Student Management (Coordinator Only)**
+```bash
+GET  /students                # List all students with pagination
+GET  /students/with-grades    # Students with academic performance
+GET  /students/stats          # Student statistics
+GET  /students/:id            # Individual student details
+GET  /students/:id/units      # Student's enrolled units with progress
+```
+
+### **Teacher Management**
+
+<img width="2278" height="404" alt="image" src="https://github.com/user-attachments/assets/3b6665fd-f56d-4e21-a145-ea4921445d36" />
 
 ```bash
-# unit tests
-$ npm run test
+GET  /teachers                # List all teachers
+GET  /teachers/stats          # Teacher statistics
+POST /teachers                # Create new teacher (Coordinator)
+DELETE /teachers/:id          # Delete teacher (Coordinator)
+```
 
-# e2e tests
-$ npm run test:e2e
+### **Course & Unit Management**
+<img width="1766" height="672" alt="image" src="https://github.com/user-attachments/assets/d3a06686-c4a2-4be1-b219-c184f498f4c8" />
 
-# test coverage
-$ npm run test:cov
+```bash
+GET  /courses                 # List all courses
+GET  /courses/:code           # Specific course details
+
+GET  /units                   # List units with pagination
+GET  /units/stats             # Unit statistics
+GET  /units/course/:code      # Units by course
+GET  /units/:code             # Specific unit details
+GET  /units/:code/progress    # Unit with student progress
+POST /units                   # Create unit (Coordinator)
+PUT  /units/:code             # Update unit (Coordinator)
+DELETE /units/:code           # Delete unit (Coordinator)
+```
+
+### **Assignment & Submission Management**
+
+<img width="1288" height="638" alt="image" src="https://github.com/user-attachments/assets/8b5a36a3-58f0-4452-a768-f9f201f32115" />
+<img width="1728" height="1088" alt="image" src="https://github.com/user-attachments/assets/9327b393-b1a1-4039-b09e-8a972e64cf89" />
+
+
+```bash
+GET  /assignments             # List assignments with filters
+GET  /assignments/:id         # Assignment details
+
+GET  /submissions/:id         # Submission details
+GET  /submissions/student/:id # Student's submissions
+PUT  /submissions/:id         # Update submission
+PUT  /submissions/:id/grade   # Grade submission (Coordinator)
+```
+
+### **Progress Tracking**
+
+![Uploading image.png…]()
+
+```bash
+GET  /student-progress/student/:studentId                    # All progress for student
+GET  /student-progress/student/:studentId/unit/:unitCode    # Specific unit progress
+GET  /student-progress/unit/:unitCode                       # All students in unit
+GET  /student-progress/student/:studentId/unit/:unitCode/percentage # Progress percentage
+POST /student-progress                                       # Create progress record
+PUT  /student-progress/student/:studentId/unit/:unitCode    # Update progress
+POST /student-progress/unit/:unitCode/initialize            # Initialize all students (Coordinator)
+```
+
+### **Analytics & Reporting (Coordinator Only)**
+
+Calculation of existing data for report to minimize load on frontend
+```bash
+GET  /analytics/overview             # Dashboard metrics
+GET  /analytics/course/:courseCode   # Course-specific metrics
+GET  /analytics/unit/:unitCode       # Unit-specific metrics
+GET  /analytics/student/:studentId   # Student analytics
+GET  /analytics/trends               # Trending data over time
+```
+
+### **Academic Data**
+Combined general academic data of a particular course
+```bash
+GET  /academic-data           # Combined academic data (courses, units, teachers)
+```
+
+## Database Models
+
+```typescript
+// User Model (Students & Coordinators)
+interface User {
+  id: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: 'STUDENT' | 'COORDINATOR';
+  courseCode?: string;        // For students
+  year?: number;              // For students
+  title?: string;             // For coordinators
+  accessLevel?: string;       // For coordinators
+  courseManaged?: string[];   // For coordinators
+}
+
+// Teacher Model (Reference data)
+interface Teacher {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  title: string;
+  department: string;
+  specialization: string;
+}
+
+// Course Model
+interface Course {
+  id: string;
+  code: string;              // "BM", "BA"
+  name: string;              // "Business Management"
+}
+
+// Unit Model
+interface Unit {
+  id: string;
+  code: string;              // "BM001", "BM002"
+  name: string;
+  description: string;
+  courseCode: string;
+  currentWeek: number;       // 1-4
+  totalWeeks: number;        // Default: 12
+}
+
+// Assignment Model
+interface Assignment {
+  id: string;
+  name: string;
+  unitCode: string;
+  deadline: Date;
+  publishedAt: Date;
+  status: 'OPEN' | 'CLOSED';
+}
+
+// Student Progress Model
+interface StudentProgress {
+  id: string;
+  studentId: string;
+  unitCode: string;
+  week1Material: 'DONE' | 'NOT_DONE';
+  week2Material: 'DONE' | 'NOT_DONE';
+  week3Material: 'DONE' | 'NOT_DONE';
+  week4Material: 'DONE' | 'NOT_DONE';
+  updatedBy: string;
+}
+```
+
+### **Installation guide**
+- Node.js (v18 or higher)
+- PostgreSQL database
+- npm or yarn
+- Git
+
+### **Local Development Setup**
+
+1. Clone the repository
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Environment configuration
+```bash
+cp .env.example .env
+
+# Configure your .env file:
+DATABASE_URL="postgresql://username:[password]@localhost:5432/lms_database"
+JWT_SECRET= [add]
+JWT_REFRESH_SECRET=[add]
+NODE_ENV=development
+PORT=3000
+```
+
+4. **Database setup**
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run database migrations
+npx prisma migrate deploy
+
+# Seed the database with sample data
+npx prisma db seed
+```
+
+5. **Start the development server**
+```bash
+# Development mode with hot reload
+npm run start:dev
+
+# Production mode
+npm run start:prod
+```
+
+The API will be available at `http://localhost:3000`
+
+
+### **More information about installation**
+The application uses Prisma ORM with PostgreSQL:
+- **Migrations**: Located in `prisma/migrations/`
+- **Schema**: Defined in `prisma/schema.prisma`
+- **Seeding**: Sample data in `prisma/seed.ts`
+
+## Testing
+
+### **Available Test Commands**
+```bash
+# Unit tests
+npm run test
+
+# End-to-end tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+
+# Watch mode
+npm run test:watch
+```
+
+### **API Testing Script**
+```bash
+# Test all API endpoints
+node test/test-api.js
+
+# Test database connection
+node test/test-database.js
+```
+
+### **Manual API Testing**
+```bash
+# Login and get token
+curl -X POST https://imajine-uni-api-production.up.railway.app/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "coordinator@imajine.ac.id",
+    "password": "coordinator123",
+    "userType": "coordinator"
+  }'
+
+# Use token for authenticated requests
+curl -X GET https://imajine-uni-api-production.up.railway.app/students \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### **Railway Deployment (Current)**
+The application is deployed on Railway with automatic deployments:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
-
-revoufinallms5
+1. **Connected Repository**: GitHub integration
+2. **Environment Variables**: Set in Railway dashboard
+3. **Database**: PostgreSQL addon
+4. **Domain**: `imajine-uni-api-production.up.railway.app`
