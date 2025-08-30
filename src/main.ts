@@ -15,8 +15,9 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',  // Local development
       'http://localhost:3001',  // Local development alt
-      'http://127.0.0.1:3000',
-      'https://imajine-uni-frontend.vercel.app'
+      'http://127.0.0.1:3000', 
+      'https://your-frontend-domain.com',
+      'https://your-frontend-domain.vercel.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
