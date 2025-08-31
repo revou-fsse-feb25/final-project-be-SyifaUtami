@@ -49,7 +49,7 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
   
   console.log(`🚀 Application is running on port ${port}`);
-  console.log(`🌐 CORS should allow: http://localhost:3000`);
+  console.log(`🌐 CORS should allow: http://localhost:3000 'https://imajine-uni-frontend.vercel.app`);
 }
 
 bootstrap().catch((error) => {
