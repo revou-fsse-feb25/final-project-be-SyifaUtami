@@ -16,8 +16,7 @@ async function bootstrap() {
       'http://localhost:3000',  // Local development
       'http://localhost:3001',  // Local development alt
       'http://127.0.0.1:3000', 
-      'https://your-frontend-domain.com',
-      'https://your-frontend-domain.vercel.app',
+      'https://imajine-uni-frontend.vercel.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
@@ -29,7 +28,8 @@ async function bootstrap() {
   console.log('✅ CORS configured for:', [
     'http://localhost:3000',
     'http://localhost:3001', 
-    'http://127.0.0.1:3000'
+    'http://127.0.0.1:3000',
+    'https://imajine-uni-frontend.vercel.app'
   ]);
 
   // 🔍 DEBUG: Add request logging middleware
